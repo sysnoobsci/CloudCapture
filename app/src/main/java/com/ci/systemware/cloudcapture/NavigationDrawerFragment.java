@@ -1,29 +1,30 @@
 package com.ci.systemware.cloudcapture;
 
-
-import android.app.Activity;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
+import android.app.FragmentManager;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.ExpandableListView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
- * Fragment used for managing interactions for and presentation of a navigation drawer.
+ * Fragment used for managing interactions for and presentation of a navigation drawer.ss
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
@@ -45,18 +46,17 @@ public class NavigationDrawerFragment extends Fragment {
      */
     private NavigationDrawerCallbacks mCallbacks;
 
-    /**
-     * Helper component that ties the action bar to the navigation drawer.
-     */
+    private ExpandableListView mDrawerListView;
+    private List<String> listDataHeader;
+    private HashMap<String, List<String>> listDataChild;
     private ActionBarDrawerToggle mDrawerToggle;
-
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerListView;
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+
 
     public NavigationDrawerFragment() {
     }
@@ -64,7 +64,6 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Read in the flag indicating whether or not the user has demonstrated awareness of the
         // drawer. See PREF_USER_LEARNED_DRAWER for details.
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -80,7 +79,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated (Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
@@ -88,26 +87,79 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        mDrawerListView = (ListView) inflater.inflate(
+                             Bundle savedInstanceState) {
+
+        mDrawerListView = (ExpandableListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
-        mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        // preparing list data
+        prepareListData();
+
+        /*
+      Helper component that ties the action bar to the navigation drawer.
+     */
+        ExpandableListAdapter listAdapter = new ExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
+
+        // setting list adapter
+        mDrawerListView.setAdapter(listAdapter);
+        // Listview on child click listener
+        mDrawerListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItem(position);
+            public boolean onChildClick(ExpandableListView parent, View v,
+                                        int groupPosition, int childPosition, long id) {
+                Fragment fragment = new Home_Fragment();
+                FragmentManager fragmentManager = getFragmentManager();
+                switch (groupPosition) {
+                    case 0:
+                        switch (childPosition) {
+                            case 0:
+                                fragment = new Internal_Gallery_Fragment();
+                                break;
+                            case 1:
+                                fragment = new File_Explorer_Fragment();
+                                break;
+                        }
+                        break;
+                    case 1://need to flesh out fragments that go under Content Server
+                        switch (childPosition) {
+                            case 0:
+                                fragment = new View_Versions_Fragment();
+                                break;
+                        }
+                        break;
+                }
+                fragmentManager.beginTransaction()
+                        .replace(R.id.container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+                return false;
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+
         return mDrawerListView;
+    }
+
+    private void prepareListData() {
+
+        listDataHeader = new ArrayList<String>();
+        listDataChild = new HashMap<String, List<String>>();
+
+        //Group Items Capture and Contend Cloud
+        listDataHeader.add("Capture");
+        listDataHeader.add("Content Cloud");
+
+        //Capture group items
+        List<String> capture = new ArrayList<String>();
+        capture.add("Capture Image");
+        capture.add("File Explorer");
+
+        //ContentCloud group items
+        List<String> content_cloud = new ArrayList<String>();
+        content_cloud.add("Images/Documents");
+
+        listDataChild.put(listDataHeader.get(0), capture);
+        listDataChild.put(listDataHeader.get(1), content_cloud);
     }
 
     public boolean isDrawerOpen() {
@@ -246,12 +298,15 @@ public class NavigationDrawerFragment extends Fragment {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
+        if (item.getItemId() == R.id.action_home) {
+            FragmentManager fragmentManager = getFragmentManager();
+            Fragment fragment = new Home_Fragment();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment, "HOME")
+                    .addToBackStack(null)
+                    .commit();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -261,9 +316,7 @@ public class NavigationDrawerFragment extends Fragment {
      */
     private void showGlobalContextActionBar() {
         ActionBar actionBar = getActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setTitle(R.string.app_name);
     }
 
     private ActionBar getActionBar() {

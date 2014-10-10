@@ -116,12 +116,12 @@ public class DownloadFileTask extends AsyncTask<String, String, String> {
     protected void onPostExecute(String result) {
         Log.d("DownloadFileTaskTest.onPostExecute()","Value of result: " + result);
         if(result.equals("cached")){
-            callIP_Fragment();
+            //callIP_Fragment();
         }
         else{
             if(fragmentChosen != null){
                 if (fragmentChosen.equals("IPFragment")){
-                    callIP_Fragment();
+                    //callIP_Fragment();
                 }
                 else{
                     Log.d("DownloadFileTask.onPostExecute","Invalid fragment chosen");
@@ -132,7 +132,7 @@ public class DownloadFileTask extends AsyncTask<String, String, String> {
         mProgressDialog.dismiss();
     }
 
-    private void callIP_Fragment() {
+    /*private void callIP_Fragment() {
         Bundle bundle = new Bundle();
         bundle.putString("retrieve_fileName", TempFileTracker.getTempFilePath(VersionInfo.getVersion()));
         bundle.putString("retrieve_fileFormat", VersionInfo.getFormat());
@@ -144,5 +144,5 @@ public class DownloadFileTask extends AsyncTask<String, String, String> {
                 .replace(R.id.container, fragment)
                 .addToBackStack(null)
                 .commit();
-    }
+    }*/
 }
