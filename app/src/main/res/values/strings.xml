@@ -10,4 +10,25 @@
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
 
+    <!--Possible messages to appear in the ToastMessageTask-->
+    <string name="noConnectionMessage">Connection to CI Server failed/timed out. Check CI Connection Profile under Settings.</string>
+    <string name="reportNotValidMessage">Report Name not found.</string>
+    <string name="fillFieldMessage">Error. Fill out all the fields.</string>
+    <string name="fileUploadSuccessMessage">File was successfully Uploaded</string>
+    <string name="fileUploadFailedMessage">File upload failed.</string>
+    <string name="fileNotWrittenMessage">Error writing file to local storage</string>
+    <string name="picNotTakenMessage">Error. No image has been taken yet.</string>
+    <string name="noProfileSelectedMessage">Error. Select a connection profile.</string>
+    <string name="notValidTopicTemplateMessage">Error. Topic template id is invalid. Check settings.</string>
+    <string name="downloadFileSuccessfulMessage">File has been downloaded successfully.</string>
+    <string name="invalidFileFormatMessage">Error. Invalid file format. Cannot load file.</string>
+    <string name="fileIsCachedMessage">Found cached file. Loading file.</string>
+    <string name="FileOverWrittenMessage">File was overwritten</string>
+    <string name="FileNotOverWrittenMessage">File was not overwritten</string>
+    <string name="CIConnProfileSavedMessage">CI Connection Profile Saved.</string>
+    <string name="DupCIConnProfileSavedMessage">Duplicate CI Connection Profile Found.</string>
+    <string name="logoffSuccessMessage">Successfully logged off.</string>
+    <string name="logoffFailedMessage">Logoff Failed.</string>
+    <!--Possible messages to appear in the ToastMessageTask-->
+
 </resources>
