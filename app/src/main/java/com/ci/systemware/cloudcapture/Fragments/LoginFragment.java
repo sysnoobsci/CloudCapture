@@ -42,4 +42,4 @@ public class LoginFragment extends Fragment {
         txt.setTypeface(font);
     }
 }
-}
+
