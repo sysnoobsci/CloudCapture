@@ -1,4 +1,4 @@
-package com.ci.systemware.cloudcapture;
+package com.ci.systemware.cloudcapture.fragments;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -18,6 +18,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+
+import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.adapters.ExpandableListAdapter;
+import com.ci.systemware.cloudcapture.fragments.LoginFragment;
+import com.ci.systemware.cloudcapture.fragments.NSearchFragment;
+import com.ci.systemware.cloudcapture.fragments.NUploadFragment;
+import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
+import com.ci.systemware.cloudcapture.fragments.SeeDTFragment;
+import com.ci.systemware.cloudcapture.fragments.SeeGroupFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,23 +117,29 @@ public class NavigationDrawerFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
-                Fragment fragment = new Home_Fragment();
+                Fragment fragment = new LoginFragment();
                 FragmentManager fragmentManager = getFragmentManager();
                 switch (groupPosition) {
                     case 0:
                         switch (childPosition) {
                             case 0:
-                                fragment = new Internal_Gallery_Fragment();
+                                fragment = new SeeBUFragment();
                                 break;
                             case 1:
-                                fragment = new File_Explorer_Fragment();
+                                fragment = new SeeGroupFragment();
+                                break;
+                            case 2:
+                                fragment = new SeeDTFragment();
                                 break;
                         }
                         break;
                     case 1://need to flesh out fragments that go under Content Server
                         switch (childPosition) {
                             case 0:
-                                fragment = new View_Versions_Fragment();
+                                fragment = new NSearchFragment();
+                                break;
+                            case 1:
+                                fragment = new NUploadFragment();
                                 break;
                         }
                         break;
@@ -146,20 +161,22 @@ public class NavigationDrawerFragment extends Fragment {
         listDataChild = new HashMap<String, List<String>>();
 
         //Group Items Capture and Contend Cloud
-        listDataHeader.add("Capture");
-        listDataHeader.add("Content Cloud");
+        listDataHeader.add("Application");
+        listDataHeader.add("Functions");
 
-        //Capture group items
-        List<String> capture = new ArrayList<String>();
-        capture.add("Capture Image");
-        capture.add("File Explorer");
+        //Application group items
+        List<String> application = new ArrayList<String>();
+        application.add("Business Unit");
+        application.add("Groups");
+        application.add("Document Types");
 
-        //ContentCloud group items
-        List<String> content_cloud = new ArrayList<String>();
-        content_cloud.add("Images/Documents");
+        //Functions group items
+        List<String> functions = new ArrayList<String>();
+        functions.add("Search");
+        functions.add("Upload");
 
-        listDataChild.put(listDataHeader.get(0), capture);
-        listDataChild.put(listDataHeader.get(1), content_cloud);
+        listDataChild.put(listDataHeader.get(0), application);
+        listDataChild.put(listDataHeader.get(1), functions);
     }
 
     public boolean isDrawerOpen() {
@@ -300,7 +317,7 @@ public class NavigationDrawerFragment extends Fragment {
         }
         if (item.getItemId() == R.id.action_home) {
             FragmentManager fragmentManager = getFragmentManager();
-            Fragment fragment = new Home_Fragment();
+            Fragment fragment = new LoginFragment();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, fragment, "HOME")
                     .addToBackStack(null)

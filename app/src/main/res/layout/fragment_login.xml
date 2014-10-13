@@ -11,14 +11,6 @@
         android:id="@+id/imageView2"
         android:src="@drawable/clouds_parlx_bg1" />
 
-    <ImageView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:id="@+id/imageView"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:src= "@drawable/sw_background"/>
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
@@ -43,19 +35,11 @@
             android:layout_centerHorizontal="true" />
     </LinearLayout>
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        android:layout_alignBottom="@+id/imageView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-    </RelativeLayout>
-
     <TableLayout
         android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        android:layout_below="@+id/linearLayout"
+        android:layout_height="175dp"
+        android:id="@+id/tableLayout"
+        android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
@@ -67,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Username"
-                android:id="@+id/textView2"
+                android:id="@+id/usernameLabel"
                 android:textSize="20sp"
                 android:paddingEnd="50dp"
                 android:paddingStart="50dp" />
@@ -75,7 +59,7 @@
             <EditText
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText2" />
+                android:id="@+id/usernameInput" />
         </TableRow>
 
         <TableRow
@@ -86,7 +70,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Password"
-                android:id="@+id/textView3"
+                android:id="@+id/passwordLabel"
                 android:textIsSelectable="false"
                 android:textSize="20sp"
                 android:paddingEnd="50dp"
@@ -95,10 +79,31 @@
             <EditText
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText3" />
+                android:id="@+id/passwordInput"
+                android:inputType="textPassword"/>
         </TableRow>
 
     </TableLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:id="@+id/loginButton"
+        android:layout_below="@+id/tableLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="50dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Host Settings"
+        android:id="@+id/hSettingsButton"
+        android:layout_alignBottom="@+id/loginButton"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="50dp" />
 
 
 </RelativeLayout>

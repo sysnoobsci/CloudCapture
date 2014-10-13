@@ -13,7 +13,7 @@ import android.util.Log;
 import android.widget.EditText;
 
 import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
-import com.ci.systemware.cloudcapture.supportingClasses.LogonSession;
+import com.ci.systemware.cloudcapture.supportingClasses.LogonSessionInfo;
 import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
 
 /**
@@ -61,7 +61,7 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
     }
 
     protected String doInBackground(String... params) {
-        LogonSession lsobj = new LogonSession(context);
+        LogonSessionInfo lsobj = new LogonSessionInfo(context);
         if (uploadCheck(description, file2upload)) {
             Boolean logonStatus = null;
             try {
@@ -91,7 +91,7 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
             QueryArguments.addArg("tplid," + topicTemplateName);
             QueryArguments.addArg("name," + description.getText().toString());
             QueryArguments.addArg("detail,y");
-            QueryArguments.addArg("sid," + LogonSession.getSid());
+            QueryArguments.addArg("sid," + LogonSessionInfo.getSid());
             QueryArguments.addArg(file2upload);
             Log.d("Upload Process ImageUri= ", file2upload.toString());
             try {

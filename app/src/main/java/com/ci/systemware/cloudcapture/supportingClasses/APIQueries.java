@@ -33,6 +33,7 @@ public class APIQueries {
     private static int action_timeout = 5000;//default values in milliseconds of timeouts
     private static int lilo_timeout = 5000;
     private static int upload_timeout = 30000;
+    SharedPreferences preferences;
 
     public APIQueries(Context context) {
         setContext(context);
@@ -56,7 +57,7 @@ public class APIQueries {
     }
 
     void setTimeouts() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         action_timeout = Integer.parseInt(preferences.getString("actiontimeout_preference", String.valueOf(action_timeout))) * 1000;
         lilo_timeout = Integer.parseInt(preferences.getString("lilotimeout_preference", String.valueOf(lilo_timeout))) * 1000;
         upload_timeout = Integer.parseInt(preferences.getString("uploadtimeout_preference", String.valueOf(upload_timeout))) * 1000;
@@ -70,9 +71,8 @@ public class APIQueries {
     }
 
     String targetCIQuery() {
-        LogonSession lilobj = new LogonSession(context);
-        String targetCIQuery = "http://" + lilobj.getHostname() + "." +
-                lilobj.getDomain() + ":" + lilobj.getPortnumber() + "/ci";
+        String targetCIQuery = "http://" + preferences.getString("hostname",null) + "." +
+                preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
         return targetCIQuery;
     }
 
@@ -148,8 +148,12 @@ public class APIQueries {
         isActionSuccessful(xobj.getTextTag());
         Boolean logonStatus = getActionresult();
         if (logonStatus) {//if the ping is successful(i.e. user logged in)
-            LogonSession.setSid(apitaskobj.getResponse());
+            LogonSessionInfo.setSid(apitaskobj.getResponse());
             Log.d("logonQuery()", "CI Server logon successful.");
+            SharedPreferences.Editor editor = preferences.edit();
+            LogonSessionInfo.setSid(apitaskobj.getResponse());
+            editor.putString("sid", String.valueOf(LogonSessionInfo.setSid(apitaskobj)));
+            editor.apply();//commit the changes and store them in a background thread
         } else {
             Log.d("logonQuery()", "CI Server logon failed.");
         }
@@ -184,12 +188,12 @@ public class APIQueries {
 
     //ping
     public Boolean pingQuery() throws ExecutionException, InterruptedException, IOException, XmlPullParserException {//pings the CI server, returns true if ping successful
-        if (!LogonSession.doesSidExist()) {//check if there is an sid (i.e. a session established)
+        if (!LogonSessionInfo.doesSidExist()) {//check if there is an sid (i.e. a session established)
             Log.d("pingQuery()", "Empty sid found. Need to login");
             return false;//if no session established, return false
         }
         QueryArguments.addArg("act,ping");
-        QueryArguments.addArg("sid," + LogonSession.getSid());
+        QueryArguments.addArg("sid," + LogonSessionInfo.getSid());
         HttpEntity entity = mebBuilder(QueryArguments.getArgslist());
         APITask apitaskobj = new APITask(entity);
         try {
@@ -216,7 +220,7 @@ public class APIQueries {
 
     //retrieve
     public String retrieveQuery(String tid) {//pings the CI server, returns true if ping successful
-        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + LogonSession.getSid();
+        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + LogonSessionInfo.getSid();
         return retrieveQuery;
     }
 

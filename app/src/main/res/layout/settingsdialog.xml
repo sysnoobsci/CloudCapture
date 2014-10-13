@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@color/systemware_blue">
+
+    <TextView
+        android:id="@+id/hostNameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter server hostname :"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/White"/>
+
+    <EditText
+        android:id="@+id/hostNameInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/White">
+        <requestFocus />
+
+    </EditText>
+
+    <TextView
+        android:id="@+id/domainNameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter server domain :"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/White"/>
+
+    <EditText
+        android:id="@+id/domainNameInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/White">
+        <requestFocus />
+
+    </EditText>
+
+    <TextView
+        android:id="@+id/portNumberLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter server port number :"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/White"/>
+
+    <EditText
+        android:id="@+id/portNumberInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:textColor="@color/White">
+        <requestFocus />
+
+    </EditText>
+
+</LinearLayout>

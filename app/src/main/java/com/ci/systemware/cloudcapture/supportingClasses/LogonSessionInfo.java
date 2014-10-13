@@ -14,64 +14,19 @@ import com.ci.systemware.cloudcapture.aSyncTasks.ToastMsgTask;
  * Created by adrian.meraz on 5/16/2014.
  */
 
-public class LogonSession {
+public class LogonSessionInfo {
 
     static Context context;
 
-    public LogonSession(Context context) {
+    public LogonSessionInfo(Context context) {
         context = this.context;
     }
 
-    private static String hostname;
-    private static String domain;
-    private static int portnumber;
-    private static String username;
-    private static String password;
     private static String sid;//session id
     private static String jsid;//jsession id
     final static int SIZE_OF_TARGET_SID = 40;//size of session ID
     final static int SIZE_OF_TARGET_JSID = 32;//size of session ID
     static APIQueries apiobj;
-
-    public static String getHostname() {
-        return hostname;
-    }
-
-    public static void setHostname(String hostname) {
-        LogonSession.hostname = hostname;
-    }
-
-    public static String getDomain() {
-        return domain;
-    }
-
-    public static void setDomain(String domain) {
-        LogonSession.domain = domain;
-    }
-
-    public static int getPortnumber() {
-        return portnumber;
-    }
-
-    public static void setPortnumber(int portnumber) {
-        LogonSession.portnumber = portnumber;
-    }
-
-    public static String getUsername() {
-        return username;
-    }
-
-    public static void setUsername(String username) {
-        LogonSession.username = username;
-    }
-
-    public static String getPassword() {
-        return password;
-    }
-
-    public static void setPassword(String password) {
-        LogonSession.password = password;
-    }
 
     public static String getSid() {
         return sid;
@@ -81,13 +36,13 @@ public class LogonSession {
         return jsid;
     }
 
-    public static void setSid(String result) {
+    public static void setSid(String result) {//pass in the xml response string to parse out sid
         Log.d("Variable", "result value: " + result);
         String target = "session sid=\"";
         int a = result.indexOf(target);
         int b = a + target.length();
         int c = a + SIZE_OF_TARGET_SID + target.length();//54 is the size of the sid plus the "target" string size
-        LogonSession.sid = result.substring(b, c);
+        LogonSessionInfo.sid = result.substring(b, c);
         Log.d("Sid", sid);
     }
 
@@ -97,26 +52,11 @@ public class LogonSession {
         int a = result.indexOf(target);
         int b = a + target.length();
         int c = a + SIZE_OF_TARGET_JSID + target.length();//47 is the size of the sid plus the "target" string size
-        LogonSession.jsid = result.substring(b, c);
+        LogonSessionInfo.jsid = result.substring(b, c);
         Log.d("JSid", jsid);
     }
 
-    public static void setCiLoginInfo() {//takes the info from the fields and sends it in the loginQuery
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        DatabaseTxns dbh = new DatabaseTxns(context);
-        String ciserver = preferences.getString("list_preference_ci_servers", null);
-        String ciserverResult = dbh.select_ci_server(ciserver);
-        String[] parms = ciserverResult.split(",");
-        try {
-            setHostname(parms[2]);
-            setDomain(parms[3]);
-            setPortnumber(Integer.parseInt(parms[4]));
-            setUsername(parms[5]);
-            setPassword(parms[6]);
-        } catch (Exception e) {
-            Log.e("Error", e.toString());
-        }
-    }
+
 
     public Boolean tryLogin(Context context) throws Exception {
         this.context = context;
