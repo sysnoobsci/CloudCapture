@@ -1,13 +1,11 @@
 package com.ci.systemware.cloudcapture.fragments;
 
 import android.app.Fragment;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.ci.systemware.cloudcapture.R;
 import com.squareup.picasso.Picasso;
@@ -24,7 +22,6 @@ public class LoginFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_login, container, false);
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         setCloudBackground();
-        setFonts();
         return rootView;
     }
 
@@ -34,12 +31,6 @@ public class LoginFragment extends Fragment {
                 .fit()
                 .centerInside()
                 .into(cloudBackground);
-    }
-
-    public void setFonts() {
-        TextView txt = (TextView) rootView.findViewById(R.id.textView);
-        Typeface font = Typeface.createFromAsset(getActivity().getAssets(), "GOTHIC.TTF");
-        txt.setTypeface(font);
     }
 }
 

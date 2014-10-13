@@ -17,7 +17,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+
+import com.ci.systemware.cloudcapture.Adapters.NavExpandableListAdapter;
+import com.ci.systemware.cloudcapture.fragments.LoginFragment;
+import com.ci.systemware.cloudcapture.fragments.NSearchFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,7 +103,7 @@ public class NavigationDrawerFragment extends Fragment {
         /*
       Helper component that ties the action bar to the navigation drawer.
      */
-        ExpandableListAdapter listAdapter = new ExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
+        ExpandableListAdapter listAdapter = new NavExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
 
         // setting list adapter
         mDrawerListView.setAdapter(listAdapter);
@@ -108,23 +113,23 @@ public class NavigationDrawerFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
-                Fragment fragment = new Home_Fragment();
+                Fragment fragment = new LoginFragment();
                 FragmentManager fragmentManager = getFragmentManager();
                 switch (groupPosition) {
                     case 0:
                         switch (childPosition) {
                             case 0:
-                                fragment = new Internal_Gallery_Fragment();
+                                fragment = new NSearchFragment();
                                 break;
                             case 1:
-                                fragment = new File_Explorer_Fragment();
+                                //fragment = new File_Explorer_Fragment();
                                 break;
                         }
                         break;
                     case 1://need to flesh out fragments that go under Content Server
                         switch (childPosition) {
                             case 0:
-                                fragment = new View_Versions_Fragment();
+                                //fragment = new View_Versions_Fragment();
                                 break;
                         }
                         break;
@@ -295,18 +300,18 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+/*        if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
         if (item.getItemId() == R.id.action_home) {
             FragmentManager fragmentManager = getFragmentManager();
-            Fragment fragment = new Home_Fragment();
+            Fragment fragment = new LoginFragment();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, fragment, "HOME")
                     .addToBackStack(null)
                     .commit();
             return true;
-        }
+        }*/
         return super.onOptionsItemSelected(item);
     }
 
