@@ -82,7 +82,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,createtopic");
         HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        APITask apitaskobj = new APITask(entity,context);
         try {
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -105,7 +105,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,listversion");
         HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        APITask apitaskobj = new APITask(entity,context);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -134,7 +134,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,logon");
         HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        APITask apitaskobj = new APITask(entity,context);
         try {
             //apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
             //          .get(lilo_timeout, TimeUnit.MILLISECONDS);
@@ -148,11 +148,10 @@ public class APIQueries {
         isActionSuccessful(xobj.getTextTag());
         Boolean logonStatus = getActionresult();
         if (logonStatus) {//if the ping is successful(i.e. user logged in)
-            LogonSessionInfo.setSid(apitaskobj.getResponse());
+            String SID = ParseSessionInfo.parseSID(apitaskobj.getResponse());
             Log.d("logonQuery()", "CI Server logon successful.");
             SharedPreferences.Editor editor = preferences.edit();
-            LogonSessionInfo.setSid(apitaskobj.getResponse());
-            editor.putString("sid", String.valueOf(LogonSessionInfo.setSid(apitaskobj)));
+            editor.putString("SID", String.valueOf(SID));
             editor.apply();//commit the changes and store them in a background thread
         } else {
             Log.d("logonQuery()", "CI Server logon failed.");
@@ -169,7 +168,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,logoff");
         HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        APITask apitaskobj = new APITask(entity,context);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(lilo_timeout, TimeUnit.MILLISECONDS);
@@ -188,14 +187,14 @@ public class APIQueries {
 
     //ping
     public Boolean pingQuery() throws ExecutionException, InterruptedException, IOException, XmlPullParserException {//pings the CI server, returns true if ping successful
-        if (!LogonSessionInfo.doesSidExist()) {//check if there is an sid (i.e. a session established)
-            Log.d("pingQuery()", "Empty sid found. Need to login");
+        if (!ParseSessionInfo.isValidSID(context)) {//check if there is an sid (i.e. a session established)
+            Log.d("pingQuery()", "Empty or invalid sid found. Need to login");
             return false;//if no session established, return false
         }
         QueryArguments.addArg("act,ping");
-        QueryArguments.addArg("sid," + LogonSessionInfo.getSid());
+        QueryArguments.addArg("sid," + preferences.getString("SID",null));
         HttpEntity entity = mebBuilder(QueryArguments.getArgslist());
-        APITask apitaskobj = new APITask(entity);
+        APITask apitaskobj = new APITask(entity,context);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -219,8 +218,8 @@ public class APIQueries {
     }
 
     //retrieve
-    public String retrieveQuery(String tid) {//pings the CI server, returns true if ping successful
-        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + LogonSessionInfo.getSid();
+    public String retrieveQuery(String tid) {//retrieves resources from content server
+        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + preferences.getString("SID",null);
         return retrieveQuery;
     }
 

@@ -3,8 +3,12 @@ package com.ci.systemware.cloudcapture.aSyncTasks;
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.ci.systemware.cloudcapture.MainActivity;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,6 +28,8 @@ public class APITask extends AsyncTask<String, Void, String> {
 
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
+    Context context;
+    ProgressDialog ringProgressDialog;
 
     private static String response;
     private static HttpEntity entity;
@@ -54,7 +60,8 @@ public class APITask extends AsyncTask<String, Void, String> {
         this.taskID = taskID;
     }
 
-    public APITask(HttpEntity entity) {
+    public APITask(HttpEntity entity, Context context) {
+        this.context = context;
         setEntity(entity);
         setTaskID(this.ID);//set unique ID for task
         ID++;
@@ -62,6 +69,8 @@ public class APITask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPreExecute() {
+        ringProgressDialog = ProgressDialog.show(context, "Please wait ...", "Performing Action ...", true);
+        ringProgressDialog.setCancelable(false);
 
     }
 
@@ -88,6 +97,7 @@ public class APITask extends AsyncTask<String, Void, String> {
     }
 
     protected void onPostExecute(String result) {
+        ringProgressDialog.dismiss();
         Log.d("onPostExecute()", "APITask[" + getTaskID() + "].onPostExecute response: " + getResponse());
     }
 }//end of ReqTask
