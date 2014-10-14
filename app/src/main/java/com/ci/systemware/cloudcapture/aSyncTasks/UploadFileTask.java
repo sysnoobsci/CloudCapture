@@ -61,11 +61,10 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
     }
 
     protected String doInBackground(String... params) {
-        ParseSessionInfo lsobj = new ParseSessionInfo(context);
         if (uploadCheck(description, file2upload)) {
             Boolean logonStatus = null;
             try {
-                logonStatus = lsobj.tryLogin(context);
+                logonStatus = apiobj.pingQuery();//check if there's a valid login first
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -91,7 +90,7 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
             QueryArguments.addArg("tplid," + topicTemplateName);
             QueryArguments.addArg("name," + description.getText().toString());
             QueryArguments.addArg("detail,y");
-            QueryArguments.addArg("sid," + ParseSessionInfo.getSID());
+            QueryArguments.addArg("sid," + preferences.getString("SID",null));
             QueryArguments.addArg(file2upload);
             Log.d("Upload Process ImageUri= ", file2upload.toString());
             try {

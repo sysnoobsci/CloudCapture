@@ -152,7 +152,7 @@ public class APIQueries {
             Log.d("logonQuery()", "CI Server logon successful.");
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("SID", String.valueOf(SID));
-            editor.apply();//commit the changes and store them in a background thread
+            editor.apply();//commit the SID change and store them in a background thread
         } else {
             Log.d("logonQuery()", "CI Server logon failed.");
         }

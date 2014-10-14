@@ -30,6 +30,8 @@
     <string name="DupCIConnProfileSavedMessage">Duplicate CI Connection Profile Found.</string>
     <string name="logoffSuccessMessage">Successfully logged off.</string>
     <string name="logoffFailedMessage">Logoff Failed.</string>
+    <string name="logonSuccessMessage">Successfully logged in.</string>
+    <string name="logonFailedMessage">Login Failed.</string>
     <!--Possible messages to appear in the ToastMessageTask-->
 
 </resources>

@@ -29,56 +29,33 @@ public class APITask extends AsyncTask<String, Void, String> {
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
     Context context;
-    ProgressDialog ringProgressDialog;
 
     private static String response;
     private static HttpEntity entity;
-    private static int ID = 0;
-    private static int taskID = 0;
+    private static int ID = 0;//Task Unique ID
 
     public String getResponse() {
         return response;
     }
 
     public void setResponse(String result) {
-        this.response = result;
-    }
-
-    public HttpEntity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(HttpEntity entity) {
-        this.entity = entity;
-    }
-
-    public int getTaskID() {
-        return taskID;
-    }
-
-    public void setTaskID(int taskID) {
-        this.taskID = taskID;
+        response = result;
     }
 
     public APITask(HttpEntity entity, Context context) {
         this.context = context;
-        setEntity(entity);
-        setTaskID(this.ID);//set unique ID for task
-        ID++;
+        this.entity = entity;
     }
 
     @Override
     protected void onPreExecute() {
-        ringProgressDialog = ProgressDialog.show(context, "Please wait ...", "Performing Action ...", true);
-        ringProgressDialog.setCancelable(false);
-
     }
 
     @Override
     protected String doInBackground(String... aurl) {
         StringBuilder total = new StringBuilder();
         httppost = new HttpPost(aurl[0]);
-        httppost.setEntity(getEntity());
+        httppost.setEntity(entity);
         try {
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity ht = response.getEntity();
@@ -92,12 +69,12 @@ public class APITask extends AsyncTask<String, Void, String> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        setResponse(total.toString());
         return total.toString();
     }
 
     protected void onPostExecute(String result) {
-        ringProgressDialog.dismiss();
-        Log.d("onPostExecute()", "APITask[" + getTaskID() + "].onPostExecute response: " + getResponse());
+        setResponse(result);
+        Log.d("onPostExecute()", "APITask[" + ID + "].onPostExecute response: " + getResponse());
+        ID++;//increment ID number of task
     }
 }//end of ReqTask
