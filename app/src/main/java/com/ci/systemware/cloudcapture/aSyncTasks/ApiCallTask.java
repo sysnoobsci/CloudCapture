@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 /**
  * Created by Adrian Meraz on 8/19/2014.
  */
-public class APITask extends AsyncTask<String, Void, String> {
+public class ApiCallTask extends AsyncTask<String, Void, String> {
 
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
@@ -42,7 +42,7 @@ public class APITask extends AsyncTask<String, Void, String> {
         response = result;
     }
 
-    public APITask(HttpEntity entity, Context context) {
+    public ApiCallTask(HttpEntity entity, Context context) {
         this.context = context;
         this.entity = entity;
     }

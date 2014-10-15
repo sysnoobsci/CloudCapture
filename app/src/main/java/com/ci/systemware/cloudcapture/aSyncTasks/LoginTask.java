@@ -7,10 +7,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.ParseSessionInfo;
-import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import org.apache.http.HttpEntity;
@@ -18,7 +16,6 @@ import org.apache.http.HttpEntity;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Created by The Bat Cave on 10/14/2014.
@@ -44,15 +41,18 @@ public class LoginTask extends AsyncTask<String, String, String> {
     String targetCIQuery() {
         String targetCIQuery = "http://" + preferences.getString("hostname",null) + "." +
                 preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
+        Log.d("targetCIQuery()","value of targetCIQuery: " + targetCIQuery);
         return targetCIQuery;
     }
 
     //action return code check
-    void isLoginSuccessful(ArrayList<String> larray) {
-        XMLParser xobj = new XMLParser(xmlResponse);
-        String rc = xobj.findTagText("path");//get the path name
-        String rc = xobj.findTagText("path");//get the path name
-        String rc = xobj.findTagText("path");//get the path name
+    Boolean isLoginSuccessful(String xmlResponse) throws Exception{
+        XMLParser xobj = new XMLParser();
+        int rc = Integer.parseInt(xobj.findTagText("rc",xmlResponse));//get the path name
+        int xrc = Integer.parseInt(xobj.findTagText("xrc",xmlResponse));//get the path name
+        int xsrc = Integer.parseInt(xobj.findTagText("xsrc",xmlResponse));//get the path name
+        Log.d("isLoginSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
+        return (rc==0&&xrc==0&&xsrc==0);//if return codes are 0 return true, else false
     }
 
     @Override
@@ -66,27 +66,29 @@ public class LoginTask extends AsyncTask<String, String, String> {
         argList.add("act,logon");
         argList.add("user," + preferences.getString("username", null));
         argList.add("password," + preferences.getString("password",null));
-
+        Boolean isSuccess = false;
         HttpEntity entity = null;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        APITask apitaskobj = new APITask(entity,context);
+        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
         try {
-            //apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-            //          .get(lilo_timeout, TimeUnit.MILLISECONDS);
-            apitaskobj.execute(targetCIQuery())
-                    .get(lilo_timeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException te) {
+            apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
+                    .get(preferences.getInt("actiontimeout_preference", 5000), TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
         }
         Log.d("logonQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
-        isActionSuccessful(xobj.getTextTag());
-        Boolean logonStatus = getActionresult();
-        if (logonStatus) {//if the ping is successful(i.e. user logged in)
+        try {
+            isSuccess = isLoginSuccessful(apitaskobj.getResponse());
+            Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (isSuccess) {//if the ping is successful(i.e. user logged in)
             String SID = ParseSessionInfo.parseSID(apitaskobj.getResponse());
             Log.d("logonQuery()", "CI Server logon successful.");
             SharedPreferences.Editor editor = preferences.edit();
@@ -95,12 +97,11 @@ public class LoginTask extends AsyncTask<String, String, String> {
         } else {
             Log.d("logonQuery()", "CI Server logon failed.");
         }
-        resetResult();//reset action result after checking it
-        return "done";
+        return String.valueOf(isSuccess);
     }
 
     protected void onPostExecute(String result) {
-        ToastMsgTask.isLogonSuccessMessage(context,logonStatus);
+        ToastMsgTask.isLogonSuccessMessage(context,Boolean.valueOf(result));
         ringProgressDialog.dismiss();
     }
 

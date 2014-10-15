@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 
 import com.ci.systemware.cloudcapture.MainActivity;
 import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
 import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
 import com.squareup.picasso.Picasso;
@@ -35,7 +37,6 @@ public class LoginFragment extends Fragment {
     EditText domainNameInput;
     EditText portNumberInput;
     View settingsDialogView;
-    AlertDialog loginDialog;
     AlertDialog.Builder alertDialogBuilder;
     Context context;
     SharedPreferences preferences;
@@ -101,10 +102,11 @@ public class LoginFragment extends Fragment {
     }
 
     private void login() throws Exception {
-        QueryArguments.addArg("user," + String.valueOf(usernameInput.getText()));
-        QueryArguments.addArg("password," + String.valueOf(passwordInput.getText()));
-        APIQueries apiqobj = new APIQueries(context);
-        apiqobj.logonQuery(QueryArguments.getArgslist());
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("username", String.valueOf(usernameInput.getText()));
+        editor.putString("password",String.valueOf(passwordInput.getText()));
+        editor.apply();//commit the changes and store them in a background thread
+        new LoginTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void hSettingsDialog(){
@@ -130,8 +132,7 @@ public class LoginFragment extends Fragment {
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,int id) {
-                                // get user input and set it to result
-                                // edit text
+                                //save user inputs to preferences
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putString("hostname", String.valueOf(hostNameInput.getText()));
                                 editor.putString("domain",String.valueOf(domainNameInput.getText()));
@@ -145,11 +146,7 @@ public class LoginFragment extends Fragment {
                                 dialog.cancel();
                             }
                         });
-
-        // create alert dialog
         AlertDialog loginDialog = alertDialogBuilder.create();
-
-        // show it
         loginDialog.show();
     }
 

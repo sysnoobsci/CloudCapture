@@ -34,14 +34,6 @@ public class XMLParser {
         this.xmlVals = xmlstring;
     }
 
-    public static String getXmlResponse() {
-        return xmlResponse;
-    }
-
-    public void setXmlResponse(String xmlResponse) {
-        this.xmlResponse = xmlResponse;
-    }
-
     public ArrayList<String> getTextTag() {
         return textTag;
     }
@@ -50,13 +42,8 @@ public class XMLParser {
         this.textTag = textTag;
     }
 
-    public XMLParser(String xmlResponse) throws IOException, XmlPullParserException {
-        setXmlResponse(xmlResponse);
-        parseXMLfunc();//start parsing when the object is created
-    }
-
-    public String parseXMLfunc() throws XmlPullParserException, IOException{
-        String xresp = getXmlResponse();
+    public String parseXMLfunc(String xmlResponse) throws XmlPullParserException, IOException{
+        String xresp = xmlResponse;
         clearXMLString();//clear the String before adding a new XMLString
         clearXMLTags();
         ArrayList<String> listOfTextTags = new ArrayList<String>();//a list contain all the text inside XML tags
@@ -86,12 +73,12 @@ public class XMLParser {
         textTag.clear();
     }
 
-    public String findTagText(String tag) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
+    public String findTagText(String tag, String xmlResponse) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
         if (tag.equals("")) {//if nothing is being searched for, return all the xml results
             Log.d("findTagText()", "No tag being searched for.");
             return getxmlVals();
         }
-        String xmlstring = getXmlResponse();
+        String xmlstring = xmlResponse;
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
         XmlPullParser xpp = factory.newPullParser();
@@ -114,7 +101,8 @@ public class XMLParser {
             }
             eventType = xpp.next();
         }
-        return tagText.toString();
+        String trimmedComma = tagText.toString().substring(0,tagText.toString().length()-1);//trim commas off of the end
+        return trimmedComma;
     }
 
 }

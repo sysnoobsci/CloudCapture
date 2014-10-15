@@ -315,11 +315,11 @@ public class NavigationDrawerFragment extends Fragment {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if (item.getItemId() == R.id.action_home) {
+        if (item.getItemId() == R.id.action_login) {
             FragmentManager fragmentManager = getFragmentManager();
             Fragment fragment = new LoginFragment();
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment, "HOME")
+                    .replace(R.id.container, fragment, "LOGIN")
                     .addToBackStack(null)
                     .commit();
             return true;

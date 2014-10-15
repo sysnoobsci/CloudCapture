@@ -9,7 +9,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
-    <string name="action_home">Home</string>
+    <string name="action_login">Login</string>
 
     <!--Possible messages to appear in the ToastMessageTask-->
     <string name="noConnectionMessage">Connection to CI Server failed/timed out. Check CI Connection Profile under Settings.</string>

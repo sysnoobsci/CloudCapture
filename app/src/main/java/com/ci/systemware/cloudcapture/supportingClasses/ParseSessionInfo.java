@@ -27,12 +27,12 @@ public class ParseSessionInfo {
     public static String parseSID(String xmlstring) {//pass in the xml response string to parse out SID
         String SID;
         Log.d("Variable", "xmlstring value: " + xmlstring);
-        String target = "session SID=\"";
+        String target = "session sid=\"";
         int a = xmlstring.indexOf(target);
         int b = a + target.length();
         int c = a + SIZE_OF_TARGET_SID + target.length();//54 is the size of the SID plus the "target" string size
         SID = xmlstring.substring(b, c);
-        Log.d("Value of SID: ", SID);
+        Log.d("Value of SID ", SID);
         return SID;//returns the session ID
     }
 
@@ -44,13 +44,13 @@ public class ParseSessionInfo {
         int b = a + target.length();
         int c = a + SIZE_OF_TARGET_JSID + target.length();//47 is the size of the SID plus the "target" string size
         JSID = xmlstring.substring(b, c);
-        Log.d("Value of JSID: ", JSID);
+        Log.d("Value of JSID ", JSID);
         return JSID;//returns the session ID
     }
 
     protected static Boolean isValidSID(Context context) {//checks if there is a valid SID
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String SID = preferences.getString("SID",null);
-        return (SID != null) && !SID.isEmpty();
+        return (SID != null && !SID.isEmpty());
     }
 }
