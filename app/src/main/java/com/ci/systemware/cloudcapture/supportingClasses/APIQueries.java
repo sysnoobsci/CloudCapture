@@ -150,39 +150,6 @@ public class APIQueries {
         return logoffStatus;
     }
 
-    //ping
-    public Boolean pingQuery() throws ExecutionException, InterruptedException, IOException, XmlPullParserException {//pings the CI server, returns true if ping successful
-        if (!ParseSessionInfo.isValidSID(context)) {//check if there is an sid (i.e. a session established)
-            Log.d("pingQuery()", "Empty or invalid sid found. Need to login");
-            return false;//if no session established, return false
-        }
-        QueryArguments.addArg("act,ping");
-        QueryArguments.addArg("sid," + preferences.getString("SID",null));
-        HttpEntity entity = MultiPartEntityBuilder.mebBuilder(QueryArguments.getArgslist());
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
-        try {
-            apitaskobj.execute(targetCIQuery())
-                    .get(action_timeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException te) {
-            ToastMsgTask.noConnectionMessage(getContext());
-        }
-        Log.d("pingQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser();
-        xobj.parseXMLfunc(apitaskobj.getResponse());
-        isActionSuccessful(xobj.getTextTag());
-        if (getActionresult()) {//if the ping is successful(i.e. user logged in)
-            Log.d("pingQuery()", "CI Server ping successful.");
-            resetResult();//reset action result after checking it
-            QueryArguments.clearList();//clear argslist after query
-            return true;
-        } else {
-            Log.d("pingQuery()", "CI Server ping failed.");
-            resetResult();//reset action result after checking it
-            QueryArguments.clearList();//clear argslist after query
-            return false;
-        }
-    }
-
     //retrieve
     public String retrieveQuery(String tid) {//retrieves resources from content server
         String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + preferences.getString("SID",null);

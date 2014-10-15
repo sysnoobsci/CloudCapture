@@ -48,9 +48,9 @@ public class LoginTask extends AsyncTask<String, String, String> {
     //action return code check
     Boolean isLoginSuccessful(String xmlResponse) throws Exception{
         XMLParser xobj = new XMLParser();
-        int rc = Integer.parseInt(xobj.findTagText("rc",xmlResponse));//get the path name
-        int xrc = Integer.parseInt(xobj.findTagText("xrc",xmlResponse));//get the path name
-        int xsrc = Integer.parseInt(xobj.findTagText("xsrc",xmlResponse));//get the path name
+        int rc = Integer.parseInt(xobj.findTagText("rc",xmlResponse));//get the return codes
+        int xrc = Integer.parseInt(xobj.findTagText("xrc",xmlResponse));
+        int xsrc = Integer.parseInt(xobj.findTagText("xsrc",xmlResponse));
         Log.d("isLoginSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
         return (rc==0&&xrc==0&&xsrc==0);//if return codes are 0 return true, else false
     }
@@ -76,31 +76,29 @@ public class LoginTask extends AsyncTask<String, String, String> {
         ApiCallTask apitaskobj = new ApiCallTask(entity,context);
         try {
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-                    .get(preferences.getInt("actiontimeout_preference", 5000), TimeUnit.MILLISECONDS);
+                    .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
         }
-        Log.d("logonQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
+        Log.d("LoginTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
         try {
             isSuccess = isLoginSuccessful(apitaskobj.getResponse());
             Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (isSuccess) {//if the ping is successful(i.e. user logged in)
+        if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
             String SID = ParseSessionInfo.parseSID(apitaskobj.getResponse());
-            Log.d("logonQuery()", "CI Server logon successful.");
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("SID", String.valueOf(SID));
             editor.apply();//commit the SID change and store them in a background thread
-        } else {
-            Log.d("logonQuery()", "CI Server logon failed.");
         }
         return String.valueOf(isSuccess);
     }
 
     protected void onPostExecute(String result) {
+        Log.d("LoginTask.onPostExecute()","value of isSuccess: " + result);
         ToastMsgTask.isLogonSuccessMessage(context,Boolean.valueOf(result));
         ringProgressDialog.dismiss();
     }
