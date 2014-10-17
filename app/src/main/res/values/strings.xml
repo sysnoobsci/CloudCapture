@@ -34,4 +34,8 @@
     <string name="logonFailedMessage">Login Failed.</string>
     <!--Possible messages to appear in the ToastMessageTask-->
 
+    <!--Messages within app-->
+
+    <string name="emptyPanelMessage">Panel is empty. Please go to settings, CAM settings, and add the CAM template IDs.</string>
+
 </resources>

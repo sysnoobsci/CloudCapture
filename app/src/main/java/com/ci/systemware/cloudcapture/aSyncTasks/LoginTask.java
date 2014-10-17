@@ -1,5 +1,8 @@
 package com.ci.systemware.cloudcapture.aSyncTasks;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,6 +10,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.fragments.HomeFragment;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.ParseSessionInfo;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
@@ -23,12 +28,14 @@ import java.util.concurrent.TimeUnit;
 public class LoginTask extends AsyncTask<String, String, String> {
 
     Context context;
+    Activity activity;
     ProgressDialog ringProgressDialog;
     SharedPreferences preferences;
     Boolean logonStatus = false;
 
     public LoginTask(Context context){
         this.context = context;
+        activity = (Activity) context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -100,7 +107,19 @@ public class LoginTask extends AsyncTask<String, String, String> {
     protected void onPostExecute(String result) {
         Log.d("LoginTask.onPostExecute()","value of isSuccess: " + result);
         ToastMsgTask.isLogonSuccessMessage(context,Boolean.valueOf(result));
+        if(Boolean.valueOf(result)){
+            callHomeFragment();//if login is successful, call the home fragment
+        }
         ringProgressDialog.dismiss();
+    }
+
+    private void callHomeFragment() {
+        Fragment fragment = new HomeFragment();
+        FragmentManager fragmentManager = activity.getFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
 }

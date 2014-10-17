@@ -40,6 +40,7 @@ public class LoginFragment extends Fragment {
     AlertDialog.Builder alertDialogBuilder;
     Context context;
     SharedPreferences preferences;
+    static Boolean isFirst_open = true;//flag if fragment is opened for the first time
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,11 +49,22 @@ public class LoginFragment extends Fragment {
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         context = getActivity();
         setCloudBackground();
-        getPreferences();
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if(isFirst_open){//if this is the first time the fragment is viewed in this app instance, clear pw and username
+            clearUserAndPW();
+        }
         instantiateViews();
         loginButtonListener();
         hSettingsButtonListener();
+        isFirst_open = false;
         return rootView;
+    }
+
+    private void clearUserAndPW(){//clears the username and password from preferences
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("username", null);
+        editor.putString("password",null);
+        editor.apply();//commit the changes and store them in a background thread
     }
 
     private void instantiateViews() {
@@ -60,13 +72,6 @@ public class LoginFragment extends Fragment {
         passwordInput = (EditText) rootView.findViewById(R.id.passwordInput);
         loginButton = (Button) rootView.findViewById(R.id.loginButton);
         hSettingsButton = (Button) rootView.findViewById(R.id.hSettingsButton);
-    }
-
-    private void getPreferences(){
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        Log.d("LoginFragment","hostname value: " + preferences.getString("hostname",null));
-        Log.d("LoginFragment","domain value: " + preferences.getString("domain",null));
-        Log.d("LoginFragment","portnumber value: " + preferences.getString("portnumber",null));
     }
 
     private void setCloudBackground() {
