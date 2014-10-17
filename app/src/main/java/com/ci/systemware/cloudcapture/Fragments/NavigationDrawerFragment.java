@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,13 +21,9 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
 import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.adapters.ExpandableListAdapter;
-import com.ci.systemware.cloudcapture.fragments.LoginFragment;
-import com.ci.systemware.cloudcapture.fragments.NSearchFragment;
-import com.ci.systemware.cloudcapture.fragments.NUploadFragment;
-import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
-import com.ci.systemware.cloudcapture.fragments.SeeDTFragment;
-import com.ci.systemware.cloudcapture.fragments.SeeGroupFragment;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +34,7 @@ import java.util.List;
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
-public class NavigationDrawerFragment extends Fragment {
+public class NavigationDrawerFragment extends Fragment{
 
     /**
      * Remember the position of the selected item.
@@ -58,8 +55,8 @@ public class NavigationDrawerFragment extends Fragment {
     private ExpandableListView mDrawerListView;
     private List<String> listDataHeader;
     private HashMap<String, List<String>> listDataChild;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
+    public static ActionBarDrawerToggle mDrawerToggle;
+    public static DrawerLayout mDrawerLayout;
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -86,6 +83,8 @@ public class NavigationDrawerFragment extends Fragment {
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
     }
+
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -192,7 +191,7 @@ public class NavigationDrawerFragment extends Fragment {
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
-
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);//lock for now until login
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
@@ -239,11 +238,12 @@ public class NavigationDrawerFragment extends Fragment {
                 getActivity().invalidateOptionsMenu(); // calls onPrepareOptionsMenu()
             }
         };
-
+        mDrawerToggle.setDrawerIndicatorEnabled(false);//disable drawer toggle until successful login
         // If the user hasn't 'learned' about the drawer, open it to introduce them to the drawer,
         // per the navigation drawer design guidelines.
         if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
             mDrawerLayout.openDrawer(mFragmentContainerView);
+
         }
 
         // Defer code dependent on restoration of previous instance state.
@@ -349,4 +349,6 @@ public class NavigationDrawerFragment extends Fragment {
          */
         void onNavigationDrawerItemSelected(int position);
     }
+
+
 }

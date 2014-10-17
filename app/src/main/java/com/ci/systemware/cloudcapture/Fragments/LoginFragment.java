@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import com.ci.systemware.cloudcapture.MainActivity;
 import com.ci.systemware.cloudcapture.R;
 import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
 import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
 import com.squareup.picasso.Picasso;
@@ -26,7 +28,7 @@ import com.squareup.picasso.Picasso;
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment implements LoginTaskInterface {
     static View rootView;
     ImageView cloudBackground;
     Button loginButton;
@@ -39,6 +41,7 @@ public class LoginFragment extends Fragment {
     View settingsDialogView;
     AlertDialog.Builder alertDialogBuilder;
     Context context;
+    LoginTask lTask;
     SharedPreferences preferences;
     static Boolean isFirst_open = true;//flag if fragment is opened for the first time
 
@@ -48,6 +51,7 @@ public class LoginFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_login, container, false);
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         context = getActivity();
+        lTask = new LoginTask(context,this);
         setCloudBackground();
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(isFirst_open){//if this is the first time the fragment is viewed in this app instance, clear pw and username
@@ -80,6 +84,8 @@ public class LoginFragment extends Fragment {
                 .fit()
                 .centerInside()
                 .into(cloudBackground);
+
+
     }
 
     private void loginButtonListener() {
@@ -111,7 +117,7 @@ public class LoginFragment extends Fragment {
         editor.putString("username", String.valueOf(usernameInput.getText()));
         editor.putString("password",String.valueOf(passwordInput.getText()));
         editor.apply();//commit the changes and store them in a background thread
-        new LoginTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new LoginTask(context,lTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void hSettingsDialog(){
@@ -156,5 +162,14 @@ public class LoginFragment extends Fragment {
     }
 
 
+    @Override
+    public void loginTaskProcessFinish(String output) {//fired after LoginTask completes - if successful login, unlock nav bar and drawer toggle
+            Log.d("LoginFragment.loginTaskProcessFinish()","LoginFragment.loginTaskProcessFinish() called.");
+            if(Boolean.valueOf(output)){
+                NavigationDrawerFragment.mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);//enable drawer slide gesture
+                NavigationDrawerFragment.mDrawerToggle.setDrawerIndicatorEnabled(true);//enable drawer toggle
+                Log.d("MainActivity.loginTaskProcessFinish()","Drawer slide gesture and toggle enabled.");
+            }
+    }
 }
 
