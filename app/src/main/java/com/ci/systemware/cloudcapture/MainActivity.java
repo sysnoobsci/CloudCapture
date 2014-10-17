@@ -14,9 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.fragments.LoginFragment;
 import com.ci.systemware.cloudcapture.fragments.NavigationDrawerFragment;
 import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 
 
 public class MainActivity extends Activity
@@ -47,16 +49,16 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mTitle = getTitle();
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
+
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {

@@ -48,9 +48,22 @@ public class ParseSessionInfo {
         return JSID;//returns the session ID
     }
 
+    public static String parsePermission(String xmlstring) {
+        String target1 = "permission id=\"";
+        int index1 = xmlstring.indexOf(target1);
+        int start = index1 + target1.length();
+        String permissionID = xmlstring.substring(start,start+7);
+        permissionID = permissionID.replaceAll("\\D+","");//strips out everything except digits
+        Log.d("parsePermission()","value of permission: " + permissionID);
+        return permissionID;
+    }
+
+
     protected static Boolean isValidSID(Context context) {//checks if there is a valid SID
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String SID = preferences.getString("SID",null);
         return (SID != null && !SID.isEmpty());
     }
+
+
 }

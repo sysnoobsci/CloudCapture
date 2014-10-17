@@ -26,7 +26,7 @@ public class XMLParser {
 
     ArrayList<String> textTag = new ArrayList<String>();
 
-    public String getxmlVals() {
+    public static String getxmlVals() {
         return xmlVals;
     }
 
@@ -73,7 +73,7 @@ public class XMLParser {
         textTag.clear();
     }
 
-    public String findTagText(String tag, String xmlResponse) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
+    public static String findTagText(String tag, String xmlResponse) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
         if (tag.equals("")) {//if nothing is being searched for, return all the xml results
             Log.d("findTagText()", "No tag being searched for.");
             return getxmlVals();

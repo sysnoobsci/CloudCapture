@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.ci.systemware.cloudcapture.R;
 import com.ci.systemware.cloudcapture.fragments.HomeFragment;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.ParseSessionInfo;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
@@ -25,16 +26,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by The Bat Cave on 10/14/2014.
  */
-public class LoginTask extends AsyncTask<String, String, String> {
-
+public class LoginTask extends AsyncTask<String, String, String>{
+    public LoginTaskInterface listener;
     Context context;
     Activity activity;
     ProgressDialog ringProgressDialog;
     SharedPreferences preferences;
     Boolean logonStatus = false;
 
-    public LoginTask(Context context){
+    public LoginTask(Context context,LoginTaskInterface listener){
         this.context = context;
+        this.listener = listener;
         activity = (Activity) context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
@@ -97,8 +99,10 @@ public class LoginTask extends AsyncTask<String, String, String> {
         }
         if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
             String SID = ParseSessionInfo.parseSID(apitaskobj.getResponse());
+            String permissions = ParseSessionInfo.parsePermission(apitaskobj.getResponse());
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("SID", String.valueOf(SID));
+            editor.putString("SID", SID);
+            editor.putString("permission", permissions);
             editor.apply();//commit the SID change and store them in a background thread
         }
         return String.valueOf(isSuccess);
@@ -110,6 +114,7 @@ public class LoginTask extends AsyncTask<String, String, String> {
         if(Boolean.valueOf(result)){
             callHomeFragment();//if login is successful, call the home fragment
         }
+        listener.loginTaskProcessFinish(result);
         ringProgressDialog.dismiss();
     }
 
@@ -121,5 +126,4 @@ public class LoginTask extends AsyncTask<String, String, String> {
                 .addToBackStack(null)
                 .commit();
     }
-
 }

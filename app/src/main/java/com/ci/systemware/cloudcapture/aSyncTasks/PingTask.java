@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ci.systemware.cloudcapture.interfaces.PingResponse;
+import com.ci.systemware.cloudcapture.interfaces.PingTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Created by adrian.meraz on 10/15/2014.
  */
 public class PingTask extends AsyncTask<String, String, String> {
-    public PingResponse delegate = null;
+    public PingTaskInterface delegate = null;
     Context context;
     SharedPreferences preferences;
 

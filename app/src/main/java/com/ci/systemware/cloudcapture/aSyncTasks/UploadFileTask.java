@@ -12,9 +12,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.EditText;
 
-import com.ci.systemware.cloudcapture.interfaces.PingResponse;
+import com.ci.systemware.cloudcapture.interfaces.PingTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
-import com.ci.systemware.cloudcapture.supportingClasses.ParseSessionInfo;
 import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
 
 import java.util.concurrent.TimeUnit;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by adrian.meraz on 10/8/2014.
  */
-public class UploadFileTask  extends AsyncTask<String, String, String> implements PingResponse{
+public class UploadFileTask  extends AsyncTask<String, String, String> implements PingTaskInterface {
 
     Activity activity;
     Context context;
