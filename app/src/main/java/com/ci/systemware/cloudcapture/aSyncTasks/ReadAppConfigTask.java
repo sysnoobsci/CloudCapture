@@ -1,12 +1,13 @@
 package com.ci.systemware.cloudcapture.aSyncTasks;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ci.systemware.cloudcapture.interfaces.PingTaskInterface;
+import com.ci.systemware.cloudcapture.interfaces.ReadAppConfigTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
@@ -17,16 +18,23 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by adrian.meraz on 10/15/2014.
+ * Created by adrian.meraz on 10/20/2014.
  */
-public class PingTask extends AsyncTask<String, String, String> {
-    public PingTaskInterface delegate = null;
+public class ReadAppConfigTask extends AsyncTask<String, String, String>{
+    public ReadAppConfigTaskInterface delegate = null;
     Context context;
     SharedPreferences preferences;
+    ProgressDialog ringProgressDialog;
 
-    public PingTask(Context context){
+    public ReadAppConfigTask(Context context){
         this.context = context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    private void setReadAppConfigProgressDialog() {
+        ringProgressDialog = new ProgressDialog(context);
+        ringProgressDialog.setTitle("Read CI config");
+        ringProgressDialog.setMessage("Reading app config files ...");
     }
 
     String targetCIQuery() {
@@ -37,50 +45,47 @@ public class PingTask extends AsyncTask<String, String, String> {
     }
 
     //action return code check
-    Boolean isPingSuccessful(String xmlResponse) throws Exception{
+    Boolean isReadAppSuccessful(String xmlResponse) throws Exception{
         XMLParser xobj = new XMLParser();
         int rc = Integer.parseInt(xobj.findTagText("rc",xmlResponse));//get the return codes
         int xrc = Integer.parseInt(xobj.findTagText("xrc",xmlResponse));
         int xsrc = Integer.parseInt(xobj.findTagText("xsrc",xmlResponse));
-        Log.d("isPingSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
+        Log.d("isReadAppSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
         return (rc==0&&xrc==0&&xsrc==0);//if return codes are 0 return true, else false
     }
+
     @Override
     protected void onPreExecute() {
-
+        setReadAppConfigProgressDialog();
+        ringProgressDialog.show();
     }
 
     protected String doInBackground(String... params) {
         ArrayList<Object> argList = new ArrayList<Object>();
-        argList.add("act,ping");
+        argList.add("act,readappconfig");
+        argList.add("appfile," + params[0]);//passed in through args
         argList.add("sid," + preferences.getString("SID", null));
-        Boolean isSuccess = false;
-        HttpEntity entity = null;
+        Boolean isSuccess;
+        HttpEntity entity;
+        String response = null;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
-        try {
+            ApiCallTask apitaskobj = new ApiCallTask(entity,context);
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-                    .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
+                    .get(preferences.getInt("actiontimeout_preference", 30000), TimeUnit.MILLISECONDS);
+            isSuccess = isReadAppSuccessful(apitaskobj.getResponse());
+            Log.d("ReadAppConfigTask.doInBackground()","value of isSuccess: " + isSuccess);
+            response = apitaskobj.getResponse();
         } catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
         }
-        Log.d("PingTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        try {
-            isSuccess = isPingSuccessful(apitaskobj.getResponse());
-            Log.d("PingTask.doInBackground()","value of isSuccess: " + isSuccess);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return String.valueOf(isSuccess);
+        return response;
     }
 
     protected void onPostExecute(String result) {
-        Log.d("PingTask.onPostExecute()","value of isSuccess: " + result);
-        delegate.pingTaskProcessFinish(result);
+        Log.d("ReadAppConfigTask.onPostExecute()","value of result: " + result);
+        ringProgressDialog.dismiss();
+        //delegate.readAppConfigTaskProcessFinish(result);
     }
 }

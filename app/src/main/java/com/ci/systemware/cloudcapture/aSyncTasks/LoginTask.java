@@ -32,7 +32,6 @@ public class LoginTask extends AsyncTask<String, String, String>{
     Activity activity;
     ProgressDialog ringProgressDialog;
     SharedPreferences preferences;
-    Boolean logonStatus = false;
 
     public LoginTask(Context context,LoginTaskInterface listener){
         this.context = context;
