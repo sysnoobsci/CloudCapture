@@ -56,9 +56,9 @@ public class LoginTask extends AsyncTask<String, String, String>{
     //action return code check
     Boolean isLoginSuccessful(String xmlResponse) throws Exception{
         XMLParser xobj = new XMLParser();
-        int rc = Integer.parseInt(xobj.findTagText("rc",xmlResponse));//get the return codes
-        int xrc = Integer.parseInt(xobj.findTagText("xrc",xmlResponse));
-        int xsrc = Integer.parseInt(xobj.findTagText("xsrc",xmlResponse));
+        int rc = Integer.parseInt(xobj.getElementText("rc", xmlResponse));//get the return codes
+        int xrc = Integer.parseInt(xobj.getElementText("xrc", xmlResponse));
+        int xsrc = Integer.parseInt(xobj.getElementText("xsrc", xmlResponse));
         Log.d("isLoginSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
         return (rc==0&&xrc==0&&xsrc==0);//if return codes are 0 return true, else false
     }
@@ -73,32 +73,23 @@ public class LoginTask extends AsyncTask<String, String, String>{
         ArrayList<Object> argList = new ArrayList<Object>();
         argList.add("act,logon");
         argList.add("user," + preferences.getString("username", null));
-        argList.add("password," + preferences.getString("password",null));
+        argList.add("password," + preferences.getString("password", null));
         Boolean isSuccess = false;
-        HttpEntity entity = null;
+        HttpEntity entity;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
-        try {
-            apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
+            new ApiCallTask(entity, context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
                     .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
+            Log.d("LoginTask.doInBackground()", "ApiCallTask.getResponse() value: " + ApiCallTask.getResponse());
+            isSuccess = isLoginSuccessful(ApiCallTask.getResponse());
+            Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
+        }catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
         }
-        Log.d("LoginTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        try {
-            isSuccess = isLoginSuccessful(apitaskobj.getResponse());
-            Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
-            String SID = ParseSessionInfo.parseSID(apitaskobj.getResponse());
-            String permissions = ParseSessionInfo.parsePermission(apitaskobj.getResponse());
+            String SID = ParseSessionInfo.parseSID(ApiCallTask.getResponse());
+            String permissions = ParseSessionInfo.parsePermission(ApiCallTask.getResponse());
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("SID", SID);
             editor.putString("permission", permissions);

@@ -16,20 +16,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.aSyncTasks.ListAppConfigTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
-import com.ci.systemware.cloudcapture.aSyncTasks.ReadAppConfigTask;
+import com.ci.systemware.cloudcapture.interfaces.ListAppConfigTaskInterface;
 import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
+import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 import com.squareup.picasso.Picasso;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
-public class LoginFragment extends Fragment implements LoginTaskInterface {
+public class LoginFragment extends Fragment implements LoginTaskInterface,ListAppConfigTaskInterface {
     static View rootView;
     ImageView cloudBackground;
     Button loginButton;
@@ -40,13 +44,13 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
     EditText domainNameInput;
     EditText portNumberInput;
     EditText usernameInput;
-    EditText templateNameInput;
-    TextView templateNameView;
+    EditText camidInput;
     ArrayList<String> templates = new ArrayList<String>();
     View settingsDialogView;
     AlertDialog.Builder alertDialogBuilder;
     Context context;
-    LoginTask lTask;
+    LoginTask logonTask;
+    ListAppConfigTask lacTask;
     SharedPreferences preferences;
     static Boolean isFirst_open = true;//flag if fragment is opened for the first time
 
@@ -57,7 +61,8 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         setCloudBackground();
         context = getActivity();
-        lTask = new LoginTask(context,this);
+        logonTask = new LoginTask(context,this);
+        lacTask = new ListAppConfigTask(context,this);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(isFirst_open){//if this is the first time the fragment is viewed in this app instance, clear pw and username
             clearUserAndPW();
@@ -122,7 +127,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
             @Override
             public void onClick(View v) {
                 Log.d("LoginFragment", "camTemplateSettingsButton clicked");
-                templateSettingsDialog();
+                camidSettingsDialog();
             }
         });
     }
@@ -132,7 +137,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
         editor.putString("username", String.valueOf(usernameInput.getText()));
         editor.putString("password",String.valueOf(passwordInput.getText()));
         editor.apply();//commit the changes and store them in a background thread
-        new LoginTask(context,lTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new LoginTask(context, logonTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void hSettingsDialog(){
@@ -176,48 +181,24 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
         loginDialog.show();
     }
 
-    private String getTemplateNamesString(ArrayList<String> templates){
-        StringBuilder templatesSB = new StringBuilder();
-        for(String template : templates){
-            if (templates.indexOf(template) == templates.size()-1){//if last template in the list, don't add comma after it
-                templatesSB.append(template);
-            }
-            else{
-                templatesSB.append(template)
-                           .append(",");
-            }
-        }
-        Log.d("getTemplateNamesString()","Value of templatesSB: " + templatesSB.toString());
-        return templatesSB.toString();
-    }
-
-    private void templateSettingsDialog(){
+    private void camidSettingsDialog(){
         LayoutInflater li = LayoutInflater.from(context);
-        settingsDialogView = li.inflate(R.layout.camtemplatesettingsdialog,null);
-
+        settingsDialogView = li.inflate(R.layout.camidsettingsdialog,null);
         // get hostsettingsdialogalog.xml view
-        templateNameInput = (EditText) settingsDialogView
-                .findViewById(R.id.templateNameInput);
-        templateNameView = (TextView) settingsDialogView
-                .findViewById(R.id.templateNames);
-        templateNameView.setText(preferences.getString("templatenames",null));
+        camidInput = (EditText) settingsDialogView
+                .findViewById(R.id.camidInput);
+        camidInput.setText(preferences.getString("camid", null));
         alertDialogBuilder = new AlertDialog.Builder(context);
         alertDialogBuilder.setView(settingsDialogView);
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setNeutralButton("Add Template",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                //overriding after dialog is shown
-                            }
-                        })
-                .setPositiveButton("Finish",
+                .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //save template name inputs to preferences
                                 SharedPreferences.Editor editor = preferences.edit();
-                                editor.putString("templatenames", String.valueOf(templateNameView.getText()));
+                                editor.putString("camid", String.valueOf(camidInput.getText()));
                                 editor.apply();//commit the changes and store them in a background thread
                             }
                         })
@@ -229,18 +210,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
                         });
         AlertDialog loginDialog = alertDialogBuilder.create();
         loginDialog.show();
-        loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL)//overriding neutral button so the dialog doesn't get closed
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.d("templateSettingsDialog()","Inert button pressed");
-                        templates.add(String.valueOf(templateNameInput.getText()));
-                        templateNameView.setText(getTemplateNamesString(templates));
-                        templateNameInput.setText("");//empty the field after each button press
-                    }
-                });
     }
-
 
     @Override
     public void loginTaskProcessFinish(String output) {//fired after LoginTask completes - if successful login, unlock nav bar and drawer toggle
@@ -249,9 +219,23 @@ public class LoginFragment extends Fragment implements LoginTaskInterface {
                 NavigationDrawerFragment.mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);//enable drawer slide gesture
                 NavigationDrawerFragment.mDrawerToggle.setDrawerIndicatorEnabled(true);//enable drawer toggle
                 Log.d("MainActivity.loginTaskProcessFinish()","Drawer slide gesture and toggle enabled.");
+                //after successful login, read the entire CI app config
+                Log.d("MainActivity.loginTaskProcessFinish()","Starting ListAppConfigTask");
+                new ListAppConfigTask(context,lacTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
-            Log.d("MainActivity.loginTaskProcessFinish()","Starting ReadAppConfigTask");
-            new ReadAppConfigTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"gensrch_create.9020.a.xml");
+    }
+
+    @Override
+    public void listAppConfigTaskProcessFinish(String output) {
+        String templateIDs = null;
+        try {
+            templateIDs = XMLParser.getCAMTemplateIDs(preferences.getString("camid",null),output);
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d("MainActivity.listAppConfigTaskProcessFinish()","templateIDs value: " + templateIDs);
     }
 }
 

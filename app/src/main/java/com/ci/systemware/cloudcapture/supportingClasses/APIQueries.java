@@ -159,13 +159,13 @@ public class APIQueries {
     public ArrayList<String> getVersionInfo(String xmlResponse) throws IOException, XmlPullParserException {
         XMLParser xobj = new XMLParser();
         ArrayList<String> versionInfo = new ArrayList<String>();
-        String path = xobj.findTagText("path",xmlResponse);//get the path name
-        String xid = xobj.findTagText("xid",xmlResponse);//get the xid
-        String dsids = xobj.findTagText("dsid",xmlResponse);//get the DSIDs
-        String cts = xobj.findTagText("cts",xmlResponse);//get the DSIDs
-        String bytes = xobj.findTagText("bytes",xmlResponse);//get the bytes
-        String fmt = xobj.findTagText("fmt",xmlResponse);//get the format
-        String ver = xobj.findTagText("v",xmlResponse);//get the version number
+        String path = xobj.getElementText("path", xmlResponse);//get the path name
+        String xid = xobj.getElementText("xid", xmlResponse);//get the xid
+        String dsids = xobj.getElementText("dsid", xmlResponse);//get the DSIDs
+        String cts = xobj.getElementText("cts", xmlResponse);//get the DSIDs
+        String bytes = xobj.getElementText("bytes", xmlResponse);//get the bytes
+        String fmt = xobj.getElementText("fmt", xmlResponse);//get the format
+        String ver = xobj.getElementText("v", xmlResponse);//get the version number
         String[] pathsarr = path.split(",");//arrays should all be the same size
         String[] xidarr = xid.split(",");
         String[] dsidsarr = dsids.split(",");

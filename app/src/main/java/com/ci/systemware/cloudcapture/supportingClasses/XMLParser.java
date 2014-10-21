@@ -21,6 +21,7 @@ public class XMLParser {
     private static String xmlVals;
     private static String xmlResponse;
     StringBuilder total = new StringBuilder();
+    private static final int MAX_STRING_LENGTH = 60;//max length to look backwards from given index
 
     private final static String EMPTY_STRING = "";
 
@@ -73,9 +74,9 @@ public class XMLParser {
         textTag.clear();
     }
 
-    public static String findTagText(String tag, String xmlResponse) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
+    public static String getElementText(String tag, String xmlResponse) throws XmlPullParserException, IOException {//pass in a tag, and get the tag contents
         if (tag.equals("")) {//if nothing is being searched for, return all the xml results
-            Log.d("findTagText()", "No tag being searched for.");
+            Log.d("getElementText()", "No tag being searched for.");
             return getxmlVals();
         }
         String xmlstring = xmlResponse;
@@ -99,6 +100,49 @@ public class XMLParser {
                     matcher = "";//clear out the String again
                 }
             }
+            eventType = xpp.next();
+        }
+        String trimmedComma = tagText.toString().substring(0,tagText.toString().length()-1);//trim commas off of the end
+        return trimmedComma;
+    }
+
+    public static String getCAMTemplateIDs(String camid, String xmlResponse) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
+        if (camid.equals("")) {//if nothing is being searched for, return all the xml results
+            Log.d("getCAMTemplateIDs()", "No CAM ID being searched for.");
+            return getxmlVals();
+        }
+        xmlResponse = xmlResponse.replace("<![CDATA[", "");//remove all the CDATA tags so XML can be parsed properly
+        xmlResponse = xmlResponse.replace("]]>", "");
+        Log.d("getCAMTemplateIDs()","camid value: " + camid);
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        XmlPullParser xpp = factory.newPullParser();
+        xpp.setInput(new StringReader(xmlResponse));//get the XML string that was created from parsing the query response
+        int eventType = xpp.getEventType();
+        StringBuilder tagText = new StringBuilder();
+        String matcher = "";
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            if (eventType == XmlPullParser.START_TAG) {
+                //xpp.require(XmlPullParser.START_TAG, null, xpp.getName());
+                final String text = xpp.getName();
+                //xpp.require(XmlPullParser.END_TAG, null, xpp.getName());
+                Log.d("getCAMTemplateIDs()","Value of text: " + text);
+                Log.d("getCAMTemplateIDs()", "xpp.getName() value: " + xpp.getName());
+                matcher = text;
+                if (matcher.contains(camid)) {//if the tag name contains the camid, get the template name
+                    Log.d("getCAMTemplateIDs()","matcher value: " + matcher);
+                    int endIndex = matcher.indexOf("camid='" + camid + "'") - 2;
+                    int startIndex = endIndex - MAX_STRING_LENGTH;
+                    String tempString = matcher.substring(startIndex, endIndex);
+                    String targetString = "appfile label='";
+                    int tempStartIndex = tempString.indexOf(targetString) + tempString.length();
+                    String templateName = matcher.substring(tempStartIndex,endIndex);
+                    Log.d("getCAMTemplateIDs()","templateName value: " + templateName);
+                    //Log.d("xpp","xpp.getText() value: " + xpp.getText());
+                    tagText.append(templateName).append(",");
+                    matcher = "";//clear out the String again
+                }
+            }      //end of XmlPullParser.START_TAG event
             eventType = xpp.next();
         }
         String trimmedComma = tagText.toString().substring(0,tagText.toString().length()-1);//trim commas off of the end

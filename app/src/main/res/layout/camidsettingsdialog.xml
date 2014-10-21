@@ -9,35 +9,21 @@
     android:background="@color/systemware_blue">
 
     <TextView
-        android:id="@+id/hostNameLabel"
+        android:id="@+id/camidLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Template Name :"
+        android:text="Enter CAM ID:"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/White"/>
 
     <EditText
-        android:id="@+id/templateNameInput"
+        android:id="@+id/camidInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/White">
         <requestFocus />
 
     </EditText>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Template Names"
-        android:id="@+id/templateNamesLabel"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/White" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/templateNames"
-        android:textColor="@color/White" />
 
 
 </LinearLayout>
