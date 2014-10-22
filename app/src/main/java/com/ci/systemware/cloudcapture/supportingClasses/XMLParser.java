@@ -145,7 +145,7 @@ public class XMLParser {
                         Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
                         tagText.append(templateName).append(",");
                     }
-                }      //end of XmlPullParser.START_TAG event
+                }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();
             }
             String trimmedComma = tagText.toString().substring(0, tagText.toString().length() - 1);//trim commas off of the end
