@@ -100,12 +100,10 @@ public class XMLParser {
             String matcher = "";
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG) {
-                    //Log.d("xpp", "xpp.getName() value: " + xpp.getName());
                     matcher = xpp.getName();
-                } else if (eventType == XmlPullParser.TEXT) {
-                    //Log.d("matcher", "matcher value: " + matcher);
+                }
+                else if (eventType == XmlPullParser.TEXT) {
                     if (matcher.equals(tag)) {//if the tag name matches what you're searching for, append the contents
-                        //Log.d("xpp","xpp.getText() value: " + xpp.getText());
                         tagText.append(xpp.getText()).append(",");
                     }
                 }
@@ -143,15 +141,8 @@ public class XMLParser {
                     Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher);
                     String camidpref = preferences.getString("camid",null);
                     if (matcher != null && matcher.equals(camidpref)) {//if the tag name contains the camid, get the template name
-                        Log.d("getCAMTemplateIDs()", "matcher value: " + matcher);
-                        int endIndex = matcher.indexOf("camid='" + camid + "'") - 2;
-                        int startIndex = endIndex - MAX_STRING_LENGTH;
-                        String tempString = matcher.substring(startIndex, endIndex);
-                        String targetString = "appfile label='";
-                        int tempStartIndex = tempString.indexOf(targetString) + tempString.length();
-                        String templateName = matcher.substring(tempStartIndex, endIndex);
+                        String templateName = xpp.getAttributeValue(null, "label");
                         Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
-                        //Log.d("xpp","xpp.getText() value: " + xpp.getText());
                         tagText.append(templateName).append(",");
                     }
                 }      //end of XmlPullParser.START_TAG event
