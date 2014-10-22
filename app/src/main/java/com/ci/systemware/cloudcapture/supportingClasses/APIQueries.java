@@ -84,7 +84,7 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("Variable", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser();
+        XMLParser xobj = new XMLParser(context);
         xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         ToastMsgTask.isFileUploadStatus(getContext(), getActionresult());
@@ -108,7 +108,7 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("listversionQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser();
+        XMLParser xobj = new XMLParser(context);
         xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         if (getActionresult()) {//if the ping is successful(i.e. user logged in)
@@ -140,7 +140,7 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("logoffQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser();
+        XMLParser xobj = new XMLParser(context);
         xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         Boolean logoffStatus = getActionresult();
@@ -157,7 +157,7 @@ public class APIQueries {
     }
 
     public ArrayList<String> getVersionInfo(String xmlResponse) throws IOException, XmlPullParserException {
-        XMLParser xobj = new XMLParser();
+        XMLParser xobj = new XMLParser(context);
         ArrayList<String> versionInfo = new ArrayList<String>();
         String path = xobj.getElementText("path", xmlResponse);//get the path name
         String xid = xobj.getElementText("xid", xmlResponse);//get the xid

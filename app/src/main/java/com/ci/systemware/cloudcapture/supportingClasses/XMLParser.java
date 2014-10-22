@@ -4,6 +4,9 @@ package com.ci.systemware.cloudcapture.supportingClasses;
  * Created by adrian.meraz on 6/24/2014.
  */
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -23,10 +26,13 @@ public class XMLParser {
     private static String xmlResponse;
     StringBuilder total = new StringBuilder();
     private static final int MAX_STRING_LENGTH = 60;//max length to look backwards from given index
-
     private final static String EMPTY_STRING = "";
-
     ArrayList<String> textTag = new ArrayList<String>();
+    static SharedPreferences preferences;
+
+    public XMLParser(Context context) {
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);;
+    }
 
     public static String getxmlVals() {
         return xmlVals;
@@ -101,7 +107,6 @@ public class XMLParser {
                     if (matcher.equals(tag)) {//if the tag name matches what you're searching for, append the contents
                         //Log.d("xpp","xpp.getText() value: " + xpp.getText());
                         tagText.append(xpp.getText()).append(",");
-                        matcher = "";//clear out the String again
                     }
                 }
                 eventType = xpp.next();
@@ -124,6 +129,7 @@ public class XMLParser {
             xmlResponse = xmlResponse.replace("<![CDATA[", "");//remove all the CDATA tags so XML can be parsed properly
             xmlResponse = xmlResponse.replace("]]>", "");
             Log.d("getCAMTemplateIDs()", "xmlResponse value: " + xmlResponse);
+
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser xpp = factory.newPullParser();
@@ -132,14 +138,11 @@ public class XMLParser {
             StringBuilder tagText = new StringBuilder();
             String matcher;
             while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    //xpp.require(XmlPullParser.START_TAG, null, xpp.getName());
-                    final String text = xpp.getName();
-                    //xpp.require(XmlPullParser.END_TAG, null, xpp.getName());
-                    Log.d("getCAMTemplateIDs()", "Value of text: " + text);
-                    Log.d("getCAMTemplateIDs()", "xpp.getName() value: " + xpp.getName());
-                    matcher = text;
-                    if (matcher.contains(camid)) {//if the tag name contains the camid, get the template name
+                if (eventType == XmlPullParser.START_TAG){
+                    matcher = xpp.getAttributeValue(null, "camid");
+                    Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher);
+                    String camidpref = preferences.getString("camid",null);
+                    if (matcher != null && matcher.equals(camidpref)) {//if the tag name contains the camid, get the template name
                         Log.d("getCAMTemplateIDs()", "matcher value: " + matcher);
                         int endIndex = matcher.indexOf("camid='" + camid + "'") - 2;
                         int startIndex = endIndex - MAX_STRING_LENGTH;
@@ -150,7 +153,6 @@ public class XMLParser {
                         Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
                         //Log.d("xpp","xpp.getText() value: " + xpp.getText());
                         tagText.append(templateName).append(",");
-                        matcher = "";//clear out the String again
                     }
                 }      //end of XmlPullParser.START_TAG event
                 eventType = xpp.next();

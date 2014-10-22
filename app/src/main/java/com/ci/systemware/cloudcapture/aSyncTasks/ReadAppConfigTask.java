@@ -76,7 +76,7 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
 
     //action return code check
     Boolean isReadAppSuccessful(String xmlResponse) throws Exception{
-        XMLParser xobj = new XMLParser();
+        XMLParser xobj = new XMLParser(context);
         int rc = Integer.parseInt(xobj.getElementText("rc", xmlResponse));//get the return codes
         int xrc = Integer.parseInt(xobj.getElementText("xrc", xmlResponse));
         int xsrc = Integer.parseInt(xobj.getElementText("xsrc", xmlResponse));
