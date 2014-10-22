@@ -76,7 +76,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,createtopic");
         HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -100,7 +100,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,listversion");
         HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -132,7 +132,7 @@ public class APIQueries {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,logoff");
         HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(lilo_timeout, TimeUnit.MILLISECONDS);

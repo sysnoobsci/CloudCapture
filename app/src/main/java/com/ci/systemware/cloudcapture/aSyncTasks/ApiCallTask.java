@@ -28,7 +28,6 @@ public class ApiCallTask extends AsyncTask<String, Void, String> {
 
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
-    Context context;
 
     private String response;
     private HttpEntity entity;
@@ -42,8 +41,7 @@ public class ApiCallTask extends AsyncTask<String, Void, String> {
         response = result;
     }
 
-    public ApiCallTask(HttpEntity entity, Context context) {
-        this.context = context;
+    public ApiCallTask(HttpEntity entity) {
         this.entity = entity;
     }
 

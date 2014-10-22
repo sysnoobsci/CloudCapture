@@ -18,7 +18,15 @@ import com.ci.systemware.cloudcapture.supportingClasses.ParseSessionInfo;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +40,8 @@ public class LoginTask extends AsyncTask<String, String, String>{
     Activity activity;
     ProgressDialog ringProgressDialog;
     SharedPreferences preferences;
+    HttpClient httpclient = new DefaultHttpClient();
+    HttpPost httppost;
 
     public LoginTask(Context context,LoginTaskInterface listener){
         this.context = context;
@@ -51,6 +61,28 @@ public class LoginTask extends AsyncTask<String, String, String>{
                 preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
         Log.d("targetCIQuery()","value of targetCIQuery: " + targetCIQuery);
         return targetCIQuery;
+    }
+
+    private String buildMPEAndExecute(HttpEntity entity){
+        StringBuilder queryResponse;
+        queryResponse = new StringBuilder();
+        try{
+            httppost = new HttpPost(targetCIQuery());
+            httppost.setEntity(entity);
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity ht = response.getEntity();
+            BufferedHttpEntity buf = new BufferedHttpEntity(ht);
+            InputStream is = buf.getContent();
+            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = r.readLine()) != null) {
+                queryResponse.append(line);
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return String.valueOf(queryResponse);
     }
 
     //action return code check
@@ -76,18 +108,15 @@ public class LoginTask extends AsyncTask<String, String, String>{
         argList.add("password," + preferences.getString("password", null));
         Boolean isSuccess = false;
         HttpEntity entity;
-        ApiCallTask apiCallTask;
+        String response = null;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            apiCallTask = new ApiCallTask(entity, context);
-            apiCallTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-                    .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
-            Log.d("LoginTask.doInBackground()", "apiCallTask.getResponse() value: " + apiCallTask.getResponse());
-            isSuccess = isLoginSuccessful(apiCallTask.getResponse());
+            response = buildMPEAndExecute(entity);
+            isSuccess = isLoginSuccessful(response);
             Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
             if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
-                String SID = ParseSessionInfo.parseSID(apiCallTask.getResponse());
-                String permissions = ParseSessionInfo.parsePermission(apiCallTask.getResponse());
+                String SID = ParseSessionInfo.parseSID(response);
+                String permissions = ParseSessionInfo.parsePermission(response);
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putString("SID", SID);
                 editor.putString("permission", permissions);

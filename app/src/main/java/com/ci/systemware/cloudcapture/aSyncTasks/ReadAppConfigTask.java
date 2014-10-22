@@ -12,9 +12,16 @@ import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by adrian.meraz on 10/20/2014.
@@ -24,6 +31,8 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
     Context context;
     SharedPreferences preferences;
     ProgressDialog ringProgressDialog;
+    HttpClient httpclient = new DefaultHttpClient();
+    HttpPost httppost;
 
     public ReadAppConfigTask(Context context){
         this.context = context;
@@ -41,6 +50,28 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
                 preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
         Log.d("targetCIQuery()", "value of targetCIQuery: " + targetCIQuery);
         return targetCIQuery;
+    }
+
+    private String buildMPEAndExecute(HttpEntity entity){
+        StringBuilder queryResponse;
+        queryResponse = new StringBuilder();
+        try{
+            httppost = new HttpPost(targetCIQuery());
+            httppost.setEntity(entity);
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity ht = response.getEntity();
+            BufferedHttpEntity buf = new BufferedHttpEntity(ht);
+            InputStream is = buf.getContent();
+            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = r.readLine()) != null) {
+                queryResponse.append(line);
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return String.valueOf(queryResponse);
     }
 
     //action return code check
@@ -67,15 +98,11 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
         Boolean isSuccess;
         HttpEntity entity;
         String response = null;
-        ApiCallTask apitaskobj;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            apitaskobj = new ApiCallTask(entity,context);
-            apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-                    .get(preferences.getInt("actiontimeout_preference", 30000), TimeUnit.MILLISECONDS);
-            isSuccess = isReadAppSuccessful(apitaskobj.getResponse());
+            response = buildMPEAndExecute(entity);
+            isSuccess = isReadAppSuccessful(response);
             Log.d("ReadAppConfigTask.doInBackground()","value of isSuccess: " + isSuccess);
-            response = apitaskobj.getResponse();
         } catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);

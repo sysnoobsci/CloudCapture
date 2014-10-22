@@ -11,7 +11,15 @@ import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +31,8 @@ public class PingTask extends AsyncTask<String, String, String> {
     public PingTaskInterface delegate = null;
     Context context;
     SharedPreferences preferences;
+    HttpClient httpclient = new DefaultHttpClient();
+    HttpPost httppost;
 
     public PingTask(Context context){
         this.context = context;
@@ -34,6 +44,28 @@ public class PingTask extends AsyncTask<String, String, String> {
                 preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
         Log.d("targetCIQuery()", "value of targetCIQuery: " + targetCIQuery);
         return targetCIQuery;
+    }
+
+    private String buildMPEAndExecute(HttpEntity entity){
+        StringBuilder queryResponse;
+        queryResponse = new StringBuilder();
+        try{
+            httppost = new HttpPost(targetCIQuery());
+            httppost.setEntity(entity);
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity ht = response.getEntity();
+            BufferedHttpEntity buf = new BufferedHttpEntity(ht);
+            InputStream is = buf.getContent();
+            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = r.readLine()) != null) {
+                queryResponse.append(line);
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return String.valueOf(queryResponse);
     }
 
     //action return code check
@@ -56,14 +88,13 @@ public class PingTask extends AsyncTask<String, String, String> {
         argList.add("sid," + preferences.getString("SID", null));
         Boolean isSuccess = false;
         HttpEntity entity;
-        ApiCallTask apitaskobj;
+        String response = null;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            apitaskobj = new ApiCallTask(entity,context);
-            apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-                    .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
-            Log.d("PingTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-            isSuccess = isPingSuccessful(apitaskobj.getResponse());
+            response = buildMPEAndExecute(entity);
+            isSuccess = isPingSuccessful(String.valueOf(response));
+            Log.d("ListAppConfigTask.doInBackground()", "value of isSuccess: " + isSuccess);
+            isSuccess = isPingSuccessful(response);
             Log.d("PingTask.doInBackground()","value of isSuccess: " + isSuccess);
         } catch (Exception e) {
             e.printStackTrace();
