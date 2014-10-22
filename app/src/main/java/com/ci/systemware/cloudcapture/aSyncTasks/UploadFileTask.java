@@ -100,7 +100,7 @@ public class UploadFileTask  extends AsyncTask<String, String, String> implement
             QueryArguments.addArg("detail,y");
             QueryArguments.addArg("sid," + preferences.getString("SID",null));
             QueryArguments.addArg(file2upload);
-            Log.d("Upload Process ImageUri= ", file2upload.toString());
+            Log.d("createTopic()", "Value of file2upload: " + file2upload.toString());
             try {
                 setSuccess(apiobj.createtopicQuery(QueryArguments.getArgslist()));//get result from createTopocQuery
             } catch (Exception e) {

@@ -67,9 +67,10 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
         Boolean isSuccess;
         HttpEntity entity;
         String response = null;
+        ApiCallTask apitaskobj;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            ApiCallTask apitaskobj = new ApiCallTask(entity,context);
+            apitaskobj = new ApiCallTask(entity,context);
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
                     .get(preferences.getInt("actiontimeout_preference", 30000), TimeUnit.MILLISECONDS);
             isSuccess = isReadAppSuccessful(apitaskobj.getResponse());

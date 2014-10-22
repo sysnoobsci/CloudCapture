@@ -28,13 +28,13 @@ public class ApiCallTask extends AsyncTask<String, Void, String> {
 
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
-    static Context context;
+    Context context;
 
-    private static String response;
-    private static HttpEntity entity;
-    private static int ID = 0;//Task Unique ID
+    private String response;
+    private HttpEntity entity;
+    private int ID = 0;//Task Unique ID
 
-    public static String getResponse() {
+    public String getResponse() {
         return response;
     }
 

@@ -76,24 +76,26 @@ public class LoginTask extends AsyncTask<String, String, String>{
         argList.add("password," + preferences.getString("password", null));
         Boolean isSuccess = false;
         HttpEntity entity;
+        ApiCallTask apiCallTask;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            new ApiCallTask(entity, context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
+            apiCallTask = new ApiCallTask(entity, context);
+            apiCallTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
                     .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
-            Log.d("LoginTask.doInBackground()", "ApiCallTask.getResponse() value: " + ApiCallTask.getResponse());
-            isSuccess = isLoginSuccessful(ApiCallTask.getResponse());
+            Log.d("LoginTask.doInBackground()", "apiCallTask.getResponse() value: " + apiCallTask.getResponse());
+            isSuccess = isLoginSuccessful(apiCallTask.getResponse());
             Log.d("LoginTask.doInBackground()","value of isSuccess: " + isSuccess);
+            if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
+                String SID = ParseSessionInfo.parseSID(apiCallTask.getResponse());
+                String permissions = ParseSessionInfo.parsePermission(apiCallTask.getResponse());
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString("SID", SID);
+                editor.putString("permission", permissions);
+                editor.apply();//commit the SID change and store them in a background thread
+            }
         }catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
-        }
-        if (isSuccess) {//if the ping is successful(i.e. user logged in), set SID
-            String SID = ParseSessionInfo.parseSID(ApiCallTask.getResponse());
-            String permissions = ParseSessionInfo.parsePermission(ApiCallTask.getResponse());
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("SID", SID);
-            editor.putString("permission", permissions);
-            editor.apply();//commit the SID change and store them in a background thread
         }
         return String.valueOf(isSuccess);
     }

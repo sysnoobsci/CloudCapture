@@ -66,14 +66,16 @@ public class ListAppConfigTask extends AsyncTask<String, String, String> {
         argList.add("sid," + preferences.getString("SID", null));
         Boolean isSuccess;
         HttpEntity entity;
-        String response = null;
+        String response = "";
+        ApiCallTask apiCallTask;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-            new ApiCallTask(entity,context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
+            apiCallTask = new ApiCallTask(entity,context);
+            apiCallTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
                     .get(preferences.getInt("actiontimeout_preference", 30000), TimeUnit.MILLISECONDS);
-            isSuccess = isListAppSuccessful(ApiCallTask.getResponse());
+            isSuccess = isListAppSuccessful(apiCallTask.getResponse());
             Log.d("ListAppConfigTask.doInBackground()", "value of isSuccess: " + isSuccess);
-            response = ApiCallTask.getResponse();
+            response = apiCallTask.getResponse();
         } catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);

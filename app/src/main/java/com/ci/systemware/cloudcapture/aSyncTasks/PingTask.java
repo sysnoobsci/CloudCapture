@@ -55,26 +55,19 @@ public class PingTask extends AsyncTask<String, String, String> {
         argList.add("act,ping");
         argList.add("sid," + preferences.getString("SID", null));
         Boolean isSuccess = false;
-        HttpEntity entity = null;
+        HttpEntity entity;
+        ApiCallTask apitaskobj;
         try {
             entity = MultiPartEntityBuilder.mebBuilder(argList);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ApiCallTask apitaskobj = new ApiCallTask(entity,context);
-        try {
+            apitaskobj = new ApiCallTask(entity,context);
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
                     .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            e.printStackTrace();
-            ToastMsgTask.noConnectionMessage(context);
-        }
-        Log.d("PingTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        try {
+            Log.d("PingTask.doInBackground()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
             isSuccess = isPingSuccessful(apitaskobj.getResponse());
             Log.d("PingTask.doInBackground()","value of isSuccess: " + isSuccess);
         } catch (Exception e) {
             e.printStackTrace();
+            ToastMsgTask.noConnectionMessage(context);
         }
         return String.valueOf(isSuccess);
     }

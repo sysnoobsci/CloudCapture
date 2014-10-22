@@ -227,9 +227,10 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
 
     @Override
     public void listAppConfigTaskProcessFinish(String output) {
-        String templateIDs = null;
+        Log.d("listAppConfigTaskProcessFinish()","Value of output: " + output);
+        String templateIDs = "";
         try {
-            templateIDs = XMLParser.getCAMTemplateIDs(preferences.getString("camid",null),output);
+            templateIDs = XMLParser.getCAMTemplateIDs(preferences.getString("camid",""),output);
         } catch (XmlPullParserException e) {
             e.printStackTrace();
         } catch (IOException e) {
