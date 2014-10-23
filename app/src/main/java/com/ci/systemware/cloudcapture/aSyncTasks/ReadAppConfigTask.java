@@ -30,19 +30,12 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
     public ReadAppConfigTaskInterface delegate = null;
     Context context;
     SharedPreferences preferences;
-    ProgressDialog ringProgressDialog;
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
 
     public ReadAppConfigTask(Context context){
         this.context = context;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    }
-
-    private void setReadAppConfigProgressDialog() {
-        ringProgressDialog = new ProgressDialog(context);
-        ringProgressDialog.setTitle("Read CI config");
-        ringProgressDialog.setMessage("Reading app config files ...");
     }
 
     String targetCIQuery() {
@@ -86,8 +79,6 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
 
     @Override
     protected void onPreExecute() {
-        setReadAppConfigProgressDialog();
-        ringProgressDialog.show();
     }
 
     protected String doInBackground(String... params) {
@@ -112,7 +103,6 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
 
     protected void onPostExecute(String result) {
         Log.d("ReadAppConfigTask.onPostExecute()","value of result: " + result);
-        ringProgressDialog.dismiss();
         delegate.readAppConfigTaskProcessFinish(result);
     }
 }
