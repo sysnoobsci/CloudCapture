@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.ci.systemware.cloudcapture.interfaces.ReadAppConfigTaskInterface;
+import com.ci.systemware.cloudcapture.supportingClasses.FileUtility;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
@@ -23,16 +24,18 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
- * Created by adrian.meraz on 10/20/2014.
+ * Created by adrian.meraz on 10/23/2014.
+ * Read and Store the App Config files all in one task. The CI templates' XML is stored and used to build
+ * the fragment layouts
  */
-public class ReadAppConfigTask extends AsyncTask<String, String, String>{
+public class RASConfigFileTask extends AsyncTask<String, String, String>{
     public ReadAppConfigTaskInterface listener;
     Context context;
     SharedPreferences preferences;
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
 
-    public ReadAppConfigTask(Context context, ReadAppConfigTaskInterface listener){
+    public RASConfigFileTask(Context context, ReadAppConfigTaskInterface listener){
         this.context = context;
         this.listener = listener;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -73,7 +76,7 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
         int rc = Integer.parseInt(xobj.getElementText("rc", xmlResponse));//get the return codes
         int xrc = Integer.parseInt(xobj.getElementText("xrc", xmlResponse));
         int xsrc = Integer.parseInt(xobj.getElementText("xsrc", xmlResponse));
-        Log.d("isListAppSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
+        Log.d("isReadAppSuccessful()","value of rc, xrc, xsrc: " + rc + "," + xrc + "," + xsrc);
         return (rc==0&&xrc==0&&xsrc==0);//if return codes are 0 return true, else false
     }
 
@@ -97,6 +100,9 @@ public class ReadAppConfigTask extends AsyncTask<String, String, String>{
         } catch (Exception e) {
             e.printStackTrace();
             ToastMsgTask.noConnectionMessage(context);
+        }
+        if(response != null){//if response isn't null, write to file
+            new FileUtility(context).writeToFile(response,FileUtility.getCAMTemplateXMLTempFilePath() + params[0]);
         }
         return response;
     }

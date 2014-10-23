@@ -25,8 +25,8 @@ public class XMLParser {
     private static String xmlVals;
     private static String xmlResponse;
     StringBuilder total = new StringBuilder();
-    private static final int MAX_STRING_LENGTH = 60;//max length to look backwards from given index
     private final static String EMPTY_STRING = "";
+    private final static String TEMPLATE_PREFIX = "gensrch";
     ArrayList<String> textTag = new ArrayList<String>();
     static SharedPreferences preferences;
 
@@ -142,8 +142,10 @@ public class XMLParser {
                     String camidpref = preferences.getString("camid",null);
                     if (matcher != null && matcher.equals(camidpref)) {//if the tag name contains the camid, get the template name
                         String templateName = xpp.getAttributeValue(null, "label");
-                        Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
-                        tagText.append(templateName).append(",");
+                        if(templateName.contains(TEMPLATE_PREFIX)) {//if template name contains the right prefix, add it
+                            Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
+                            tagText.append(templateName).append(",");
+                        }
                     }
                 }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();
