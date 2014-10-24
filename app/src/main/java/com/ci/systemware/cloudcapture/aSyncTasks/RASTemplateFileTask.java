@@ -6,10 +6,10 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ci.systemware.cloudcapture.interfaces.RASConfigFileTaskInterface;
-import com.ci.systemware.cloudcapture.interfaces.ReadAppConfigTaskInterface;
+import com.ci.systemware.cloudcapture.interfaces.RASTemplateFileTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.FileUtility;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
+import com.ci.systemware.cloudcapture.supportingClasses.TemplateXMLFileTracker;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import org.apache.http.HttpEntity;
@@ -20,23 +20,24 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
  * Created by adrian.meraz on 10/23/2014.
- * Read and Store the App Config files all in one task. The CI templates' XML is stored and used to build
+ * Read and Store the CAM teplate XML files all in one task. The CI templates' XML is stored and used to build
  * the fragment layouts
  */
-public class RASConfigFileTask extends AsyncTask<String, String, String>{
-    public RASConfigFileTaskInterface listener;
+public class RASTemplateFileTask extends AsyncTask<String, String, String>{
+    public RASTemplateFileTaskInterface listener;
     Context context;
     SharedPreferences preferences;
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
 
-    public RASConfigFileTask(Context context, RASConfigFileTaskInterface listener){
+    public RASTemplateFileTask(Context context, RASTemplateFileTaskInterface listener){
         this.context = context;
         this.listener = listener;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -104,6 +105,10 @@ public class RASConfigFileTask extends AsyncTask<String, String, String>{
         }
         if(response != null){//if response isn't null, write to file
             FileUtility.writeToFile(response,FileUtility.getCAMTemplateXMLTempFilePath(context), params[0]);
+            File templateFile = new File(FileUtility.getCAMTemplateXMLTempFilePath(context) + "/" + params[0]);
+            if(templateFile.exists()){//if file was successfully written and exists, track the template XML file name
+                TemplateXMLFileTracker.addTemplateFileToList(FileUtility.getCAMTemplateXMLTempFilePath(context) + "/" + params[0]);
+            }
         }
         return response;
     }

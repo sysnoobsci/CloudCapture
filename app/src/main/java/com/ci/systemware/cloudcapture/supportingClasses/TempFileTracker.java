@@ -18,7 +18,7 @@ public class TempFileTracker {
 
     public static void addTempFileToList(String filePath, int version) {//add temp files and versions
         tempFileInfo.put(version, filePath);//version number is the key, filepath is the value
-        Log.d("addTempFileToList()","file " + filePath + " added to the list");
+        Log.d("addTemplateFileToList()","file " + filePath + " added to the list");
     }
 
     public static String getTempFilePath(int version){

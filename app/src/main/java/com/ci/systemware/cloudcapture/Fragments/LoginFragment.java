@@ -21,12 +21,13 @@ import android.widget.ImageView;
 import com.ci.systemware.cloudcapture.R;
 import com.ci.systemware.cloudcapture.aSyncTasks.ListAppConfigTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
-import com.ci.systemware.cloudcapture.aSyncTasks.RASConfigFileTask;
+import com.ci.systemware.cloudcapture.aSyncTasks.RASTemplateFileTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.ToastMsgTask;
 import com.ci.systemware.cloudcapture.interfaces.ListAppConfigTaskInterface;
 import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
-import com.ci.systemware.cloudcapture.interfaces.RASConfigFileTaskInterface;
+import com.ci.systemware.cloudcapture.interfaces.RASTemplateFileTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.FileUtility;
+import com.ci.systemware.cloudcapture.supportingClasses.TemplateXMLFileTracker;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import com.squareup.picasso.Picasso;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
-public class LoginFragment extends Fragment implements LoginTaskInterface,ListAppConfigTaskInterface,RASConfigFileTaskInterface {
+public class LoginFragment extends Fragment implements LoginTaskInterface,ListAppConfigTaskInterface,RASTemplateFileTaskInterface {
     static View rootView;
     ImageView cloudBackground;
     Context context;
@@ -56,7 +57,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     //task objects
     LoginTask logonTask;
     ListAppConfigTask lacTask;
-    RASConfigFileTask rasTask;
+    RASTemplateFileTask rasTask;
 
     SharedPreferences preferences;
     static Boolean isFirst_open = true;//flag if fragment is opened for the first time
@@ -70,7 +71,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         context = getActivity();
         logonTask = new LoginTask(context,this);
         lacTask = new ListAppConfigTask(context,this);
-        rasTask = new RASConfigFileTask(context,this);
+        rasTask = new RASTemplateFileTask(context,this);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(isFirst_open){//if this is the first time the fragment is viewed in this app instance, clear pw and username
             clearUserAndPW();
@@ -154,10 +155,12 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         editor.apply();//commit the changes and store them in a background thread
         if(areSettingsGood()) {
             new LoginTask(context, logonTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            TemplateXMLFileTracker.clearTemplateXMLFiles(context);//clear out the CAM template XML files prior to writing the new ones
         }
         else{
             ToastMsgTask.areSettingsGoodMessage(context);
         }
+
     }
 
     private void hSettingsDialog(){
@@ -258,7 +261,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         Log.d("MainActivity.listAppConfigTaskProcessFinish()","templateIDs value: " + templateIDs);
         String [] templateNamesArr = templateIDs.split(",");
         for(String templateName : templateNamesArr){
-            new RASConfigFileTask(context,rasTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,templateName);
+            new RASTemplateFileTask(context,rasTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,templateName);
         }
     }
 

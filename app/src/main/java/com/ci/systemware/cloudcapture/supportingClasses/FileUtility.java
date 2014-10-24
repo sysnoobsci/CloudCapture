@@ -83,7 +83,7 @@ public class FileUtility {
             myOutWriter.append(data);
             myOutWriter.close();
             fOut.close();
-            Log.d("writeToFile()","File " + dir + fileName + " written.");
+            Log.d("writeToFile()","File " + myFile.getAbsolutePath() + " written.");
         }
         catch (IOException e) {
             Log.e("writeToFile()", "File write failed: " + myFile.getAbsolutePath());
@@ -92,10 +92,10 @@ public class FileUtility {
     }
 
 
-    public static String readFromFile(String path,Context context) {
+    public static String readFromFile(String filepath,Context context) {
         String ret = "";
         try {
-            InputStream inputStream = context.openFileInput(path);
+            InputStream inputStream = context.openFileInput(filepath);
 
             if ( inputStream != null ) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
