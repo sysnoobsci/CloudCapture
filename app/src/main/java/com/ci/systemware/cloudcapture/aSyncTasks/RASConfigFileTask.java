@@ -85,7 +85,7 @@ public class RASConfigFileTask extends AsyncTask<String, String, String>{
     protected void onPreExecute() {
     }
 
-    protected String doInBackground(String... params) {
+    protected String doInBackground(String... params) {//1st parm is template name
         ArrayList<Object> argList = new ArrayList<Object>();
         argList.add("act,readappconfig");
         argList.add("appfile," + params[0]);//passed in through args
@@ -103,8 +103,7 @@ public class RASConfigFileTask extends AsyncTask<String, String, String>{
             ToastMsgTask.noConnectionMessage(context);
         }
         if(response != null){//if response isn't null, write to file
-            FileUtility fileUtilObj = new FileUtility(context);
-            fileUtilObj.writeToFile(response,fileUtilObj.getCAMTemplateXMLTempFilePath(), params[0]);
+            FileUtility.writeToFile(response,FileUtility.getCAMTemplateXMLTempFilePath(context), params[0]);
         }
         return response;
     }

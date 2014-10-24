@@ -148,5 +148,9 @@ public class ToastMsgTask extends AsyncTask<String, String, String> {
                 toastMessage);
     }
 
+    public static void areSettingsGoodMessage(Context context){
+        new ToastMsgTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                context.getResources().getString(R.string.areSettingsGoodMessage));
+    }
 
 }

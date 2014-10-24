@@ -32,6 +32,7 @@
     <string name="logoffFailedMessage">Logoff Failed.</string>
     <string name="logonSuccessMessage">Successfully logged in.</string>
     <string name="logonFailedMessage">Login Failed.</string>
+    <string name="areSettingsGoodMessage">Username, Password, or CAM ID field is invalid/empty.</string>
     <!--Possible messages to appear in the ToastMessageTask-->
 
     <!--Messages within app-->

@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,22 +21,25 @@ import android.widget.ImageView;
 import com.ci.systemware.cloudcapture.R;
 import com.ci.systemware.cloudcapture.aSyncTasks.ListAppConfigTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
+import com.ci.systemware.cloudcapture.aSyncTasks.RASConfigFileTask;
+import com.ci.systemware.cloudcapture.aSyncTasks.ToastMsgTask;
 import com.ci.systemware.cloudcapture.interfaces.ListAppConfigTaskInterface;
 import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
+import com.ci.systemware.cloudcapture.interfaces.RASConfigFileTaskInterface;
+import com.ci.systemware.cloudcapture.supportingClasses.FileUtility;
 import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
+
 import com.squareup.picasso.Picasso;
 
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
-public class LoginFragment extends Fragment implements LoginTaskInterface,ListAppConfigTaskInterface {
+public class LoginFragment extends Fragment implements LoginTaskInterface,ListAppConfigTaskInterface,RASConfigFileTaskInterface {
     static View rootView;
     ImageView cloudBackground;
+    Context context;
     Button loginButton;
     Button hSettingsButton;
     Button camTemplateSettingsButton;
@@ -45,12 +49,15 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     EditText portNumberInput;
     EditText usernameInput;
     EditText camidInput;
-    ArrayList<String> templates = new ArrayList<String>();
+    ArrayList<String> templateNames = new ArrayList<String>();
     View settingsDialogView;
     AlertDialog.Builder alertDialogBuilder;
-    Context context;
+
+    //task objects
     LoginTask logonTask;
     ListAppConfigTask lacTask;
+    RASConfigFileTask rasTask;
+
     SharedPreferences preferences;
     static Boolean isFirst_open = true;//flag if fragment is opened for the first time
 
@@ -63,6 +70,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         context = getActivity();
         logonTask = new LoginTask(context,this);
         lacTask = new ListAppConfigTask(context,this);
+        rasTask = new RASConfigFileTask(context,this);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(isFirst_open){//if this is the first time the fragment is viewed in this app instance, clear pw and username
             clearUserAndPW();
@@ -132,12 +140,24 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         });
     }
 
+    private Boolean areSettingsGood(){//check if all needed prefs are set i.e. not empty or null
+        String usernameStr = preferences.getString("username",null).trim();
+        String passwordStr = preferences.getString("password",null).trim();
+        String camidStr = preferences.getString("camid",null).trim();
+        return (!TextUtils.isEmpty(usernameStr) && !TextUtils.isEmpty(passwordStr) && !TextUtils.isEmpty(camidStr));
+    }
+
     private void login() throws Exception {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("username", String.valueOf(usernameInput.getText()));
         editor.putString("password",String.valueOf(passwordInput.getText()));
         editor.apply();//commit the changes and store them in a background thread
-        new LoginTask(context, logonTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if(areSettingsGood()) {
+            new LoginTask(context, logonTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        else{
+            ToastMsgTask.areSettingsGoodMessage(context);
+        }
     }
 
     private void hSettingsDialog(){
@@ -220,23 +240,31 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
                 NavigationDrawerFragment.mDrawerToggle.setDrawerIndicatorEnabled(true);//enable drawer toggle
                 Log.d("MainActivity.loginTaskProcessFinish()","Drawer slide gesture and toggle enabled.");
                 //after successful login, read the entire CI app config
+                FileUtility.directoryCheck(context);//make sure directories exist for app to function properly
                 Log.d("MainActivity.loginTaskProcessFinish()","Starting ListAppConfigTask");
                 new ListAppConfigTask(context,lacTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
     }
 
     @Override
-    public void listAppConfigTaskProcessFinish(String output) {
+    public void listAppConfigTaskProcessFinish(String output) {//fired after listAppConfigTask completes
         Log.d("listAppConfigTaskProcessFinish()","Value of output: " + output);
         String templateIDs = "";
         try {
             templateIDs = XMLParser.getCAMTemplateIDs(preferences.getString("camid",""),output);
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         Log.d("MainActivity.listAppConfigTaskProcessFinish()","templateIDs value: " + templateIDs);
+        String [] templateNamesArr = templateIDs.split(",");
+        for(String templateName : templateNamesArr){
+            new RASConfigFileTask(context,rasTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,templateName);
+        }
+    }
+
+    @Override
+    public void RASConfigFileTaskProcessFinish(String output) {
+
     }
 }
 

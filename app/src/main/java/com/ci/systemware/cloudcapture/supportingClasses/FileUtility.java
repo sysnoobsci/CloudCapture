@@ -22,40 +22,35 @@ import java.util.ArrayList;
  * Created by john.williams on 8/26/2014.
  */
 public class FileUtility {
-    static Context context;
     //static String root = Environment.getExternalStorageDirectory().toString();
     static ArrayList<File> dirArray = new ArrayList<File>();
 
-    public FileUtility(Context context) {
-        this.context = context;
-    }
-
-    public static String getRootPath() {
+    public static String getRootPath(Context context) {
         return context.getFilesDir().toString();
     }
 
-    public static String getSyswareFilePath() {
+    public static String getSyswareFilePath(Context context) {
         return context.getFilesDir().toString();
     }
 
-    public static String getImageFilePath() {
-        return context.getFilesDir().toString() + "/Images/";
+    public static String getImageFilePath(Context context) {
+        return String.valueOf(context.getFilesDir()) + "/Images/";
     }
 
-    public static String getPDFFilePath() {
-        return context.getFilesDir().toString() + "/PDF/";
+    public static String getPDFFilePath(Context context) {
+        return String.valueOf(context.getFilesDir()) + "/PDF/";
     }
 
-    public static String getTxtFilePath() {
-        return context.getFilesDir().toString() + "/TXT/";
+    public static String getTxtFilePath(Context context) {
+        return String.valueOf(context.getFilesDir()) + "/TXT/";
     }
 
-    public static String getTempFilePath() {
-        return context.getFilesDir().toString() + "/Temp/";
+    public static String getTempFilePath(Context context) {
+        return String.valueOf(context.getFilesDir()) + "/Temp/";
     }
 
-    public static String getCAMTemplateXMLTempFilePath() {
-        return context.getFilesDir().toString() + "/Temp/CAMTemplates";
+    public static String getCAMTemplateXMLTempFilePath(Context context) {
+        return String.valueOf(context.getFilesDir()) + "/Temp/CAMTemplates";
     }
 
     public static Boolean doesFileExist(String fullFilePath){
@@ -63,12 +58,12 @@ public class FileUtility {
         return file.exists();
     }
 
-    public static void directoryCheck(){
-        dirArray.add(new File(getImageFilePath()));
-        dirArray.add(new File(getPDFFilePath()));
-        dirArray.add(new File(getTxtFilePath()));
-        dirArray.add(new File(getTempFilePath()));
-        dirArray.add(new File(getCAMTemplateXMLTempFilePath()));
+    public static void directoryCheck(Context context){
+        dirArray.add(new File(getImageFilePath(context)));
+        dirArray.add(new File(getPDFFilePath(context)));
+        dirArray.add(new File(getTxtFilePath(context)));
+        dirArray.add(new File(getTempFilePath(context)));
+        dirArray.add(new File(getCAMTemplateXMLTempFilePath(context)));
         for(File path : dirArray){
             if(!path.exists()){//if dir doesn't exist, create it
                 path.mkdir();
@@ -97,7 +92,7 @@ public class FileUtility {
     }
 
 
-    public static String readFromFile(String path) {
+    public static String readFromFile(String path,Context context) {
         String ret = "";
         try {
             InputStream inputStream = context.openFileInput(path);
@@ -124,14 +119,14 @@ public class FileUtility {
         return ret;
     }
 
-    public static String chooseDownloadFilePath(String versionFormat) {
+    public static String chooseDownloadFilePath(String versionFormat,Context context) {
         String fp;
         if (versionFormat.equals("PDF")) {
-            fp = getPDFFilePath();
+            fp = getPDFFilePath(context);
         } else if (versionFormat.equals("XML") || versionFormat.equals("TXT") || versionFormat.equals("ASC")) {
-            fp = getTxtFilePath();
+            fp = getTxtFilePath(context);
         } else {
-            fp = getImageFilePath();
+            fp = getImageFilePath(context);
         }
         return fp;
     }
