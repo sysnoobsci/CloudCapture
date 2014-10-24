@@ -4,7 +4,6 @@ package com.ci.systemware.cloudcapture.supportingClasses;
  * Created by adrian.meraz on 10/10/2014.
  */
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -24,13 +23,7 @@ import java.util.ArrayList;
  */
 public class FileUtility {
     static Context context;
-    static String root = Environment.getExternalStorageDirectory().toString();
-    public static final String SYSWARE_FILEPATH = root + "/Systemware/";
-    public static final String IMAGE_FILEPATH = root + "/Systemware/Images/";
-    public static final String PDF_FILEPATH = root + "/Systemware/PDF/";
-    public static final String TXT_FILEPATH = root + "/Systemware/TXT/";
-    public static final String TEMP_FILEPATH = root + "/Systemware/Temp/";
-    public static final String CAMTEMPLATE_XML_TEMP_FILEPATH = root + "/Systemware/Temp/CAMTemplates";
+    //static String root = Environment.getExternalStorageDirectory().toString();
     static ArrayList<File> dirArray = new ArrayList<File>();
 
     public FileUtility(Context context) {
@@ -38,31 +31,31 @@ public class FileUtility {
     }
 
     public static String getRootPath() {
-        return root;
+        return context.getFilesDir().toString();
     }
 
     public static String getSyswareFilePath() {
-        return SYSWARE_FILEPATH;
+        return context.getFilesDir().toString();
     }
 
     public static String getImageFilePath() {
-        return IMAGE_FILEPATH;
+        return context.getFilesDir().toString() + "/Images/";
     }
 
     public static String getPDFFilePath() {
-        return PDF_FILEPATH;
+        return context.getFilesDir().toString() + "/PDF/";
     }
 
     public static String getTxtFilePath() {
-        return TXT_FILEPATH;
+        return context.getFilesDir().toString() + "/TXT/";
     }
 
     public static String getTempFilePath() {
-        return TEMP_FILEPATH;
+        return context.getFilesDir().toString() + "/Temp/";
     }
 
     public static String getCAMTemplateXMLTempFilePath() {
-        return TEMP_FILEPATH;
+        return context.getFilesDir().toString() + "/Temp/CAMTemplates";
     }
 
     public static Boolean doesFileExist(String fullFilePath){
@@ -85,15 +78,21 @@ public class FileUtility {
         dirArray.clear();
     }
 
-    public static void writeToFile(String data, String path) {
+    public static void writeToFile(String data,String dir, String fileName) {
+        File myFile = new File(dir,fileName);
         try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(path, Context.MODE_PRIVATE));
-            outputStreamWriter.write(data);
-            outputStreamWriter.close();
-            Log.d("writeToFile()","File " + path + " written.");
+            myFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter =
+                    new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+            myOutWriter.close();
+            fOut.close();
+            Log.d("writeToFile()","File " + dir + fileName + " written.");
         }
         catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
+            Log.e("writeToFile()", "File write failed: " + myFile.getAbsolutePath());
+            e.printStackTrace();
         }
     }
 

@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.ci.systemware.cloudcapture.interfaces.RASConfigFileTaskInterface;
 import com.ci.systemware.cloudcapture.interfaces.ReadAppConfigTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.FileUtility;
 import com.ci.systemware.cloudcapture.supportingClasses.MultiPartEntityBuilder;
@@ -29,13 +30,13 @@ import java.util.ArrayList;
  * the fragment layouts
  */
 public class RASConfigFileTask extends AsyncTask<String, String, String>{
-    public ReadAppConfigTaskInterface listener;
+    public RASConfigFileTaskInterface listener;
     Context context;
     SharedPreferences preferences;
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
 
-    public RASConfigFileTask(Context context, ReadAppConfigTaskInterface listener){
+    public RASConfigFileTask(Context context, RASConfigFileTaskInterface listener){
         this.context = context;
         this.listener = listener;
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -102,13 +103,14 @@ public class RASConfigFileTask extends AsyncTask<String, String, String>{
             ToastMsgTask.noConnectionMessage(context);
         }
         if(response != null){//if response isn't null, write to file
-            new FileUtility(context).writeToFile(response,FileUtility.getCAMTemplateXMLTempFilePath() + params[0]);
+            FileUtility fileUtilObj = new FileUtility(context);
+            fileUtilObj.writeToFile(response,fileUtilObj.getCAMTemplateXMLTempFilePath(), params[0]);
         }
         return response;
     }
 
     protected void onPostExecute(String result) {
         Log.d("ReadAppConfigTask.onPostExecute()","value of result: " + result);
-        listener.readAppConfigTaskProcessFinish(result);
+        listener.RASConfigFileTaskProcessFinish(result);
     }
 }
