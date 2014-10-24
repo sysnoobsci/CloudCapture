@@ -175,12 +175,14 @@ public class XMLParser {
             String matcher2;
             Boolean isVisible = true;//flag to see if view is visible
             String startTagName;
+            String uiElementName;
             ArrayList<View> viewsList = new ArrayList<View>();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG){
                     matcher = xpp.getAttributeValue(null, "input");
                     matcher2 = xpp.getAttributeValue(null, "visible");
                     startTagName = xpp.getName();
+
                     Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher);
                     Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher2);
                     if (!TextUtils.isEmpty(matcher) && !TextUtils.isEmpty(matcher2) && String.valueOf(matcher2) == "1" ) {//if the view is visible in the CI UI, include it
