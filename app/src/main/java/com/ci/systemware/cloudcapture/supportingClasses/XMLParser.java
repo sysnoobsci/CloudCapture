@@ -155,16 +155,16 @@ public class XMLParser {
         }
     }
 
-    public static String readXMLAndSetFragmentLayout(String templateXMLFileName,Context context) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
+    public static ArrayList<String> readXMLAndTransformViews(String templateXMLFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
         if(TextUtils.isEmpty(templateXMLFileName)){
-            Log.d("readXMLAndSetFragmentLayout()", "templateXMLFileName empty or null");
-            return "templateXMLFileNameIsEmpty";
+            Log.d("readXMLAndTransformViews()", "templateXMLFileName empty or null");
+            return null;
         }
         else {
-            String xmlString = FileUtility.readFromFile(templateXMLFileName,context);
+            Log.d("readXMLAndTransformViews()","Beginning read of file: " + templateXMLFileName);
+            String xmlString = FileUtility.readFromFile(templateXMLFileName);
             xmlString = xmlString.replace("<![CDATA[", "").replace("]]>", "");//remove all the CDATA tags so XML can be parsed properly
-            Log.d("getCAMTemplateIDs()", "xmlResponse value: " + xmlString);
-
+            Log.d("readXMLAndTransformViews()", "xmlResponse value: " + xmlString);
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser xpp = factory.newPullParser();
@@ -173,39 +173,48 @@ public class XMLParser {
             StringBuilder tagText = new StringBuilder();
             String matcher;
             String matcher2;
+            String fieldLabel = null;
             Boolean isVisible = true;//flag to see if view is visible
             String startTagName;
-            String uiElementName;
-            ArrayList<View> viewsList = new ArrayList<View>();
+            String uiElementName = null;
+            ArrayList<String> viewsList = new ArrayList<String>();
+
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG){
-                    matcher = xpp.getAttributeValue(null, "input");
-                    matcher2 = xpp.getAttributeValue(null, "visible");
                     startTagName = xpp.getName();
-
-                    Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher);
-                    Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher2);
-                    if (!TextUtils.isEmpty(matcher) && !TextUtils.isEmpty(matcher2) && String.valueOf(matcher2) == "1" ) {//if the view is visible in the CI UI, include it
-                        while(xpp.getName() != startTagName){//keep going through the tag to make sure there aren't visible="0" strings
-                            if(xpp.getAttributeValue(null, "visible") == "0"){
+                    matcher = xpp.getAttributeValue(null, "name");
+                    matcher2 = xpp.getAttributeValue(null, "visible");
+                    Log.d("readXMLAndTransformViews()", "Value of startTagName, matcher, and matcher2: " +
+                            startTagName + "," + matcher + "," + matcher2);
+                    if (!TextUtils.isEmpty(matcher) && matcher2.equals("1")) {
+                        while(!xpp.getName().equals(startTagName)){//keep going through the tag to make sure there aren't visible="0" strings
+                            if(xpp.getName().equals("label")){
+                                fieldLabel = xpp.getText();
+                            }
+                            if(xpp.getName().equals("type")){
+                                uiElementName = xpp.getText();
+                            }
+                            if(xpp.getAttributeValue(null, "visible").equals("0")){
                                 isVisible = false;
+                                uiElementName = "";
                             }
                             xpp.next();
                         }
-                        if(isVisible){//if view is deemed visible, find out what view (CI UI element) is used in CI
-
-                        }
                     }
-
+                    if(!TextUtils.isEmpty(uiElementName)&&isVisible){
+                        viewsList.add(fieldLabel + "," + uiElementName);
+                        Log.d("readXMLAndTransformViews()","values of fieldLabel, uiElementName: " +
+                        fieldLabel + "," + uiElementName);
+                    }
                 }//end of XmlPullParser.START_TAG event
-                eventType = xpp.next();
+                eventType = xpp.next();//go to next event
             }
-            String trimmedComma = tagText.toString().substring(0, tagText.toString().length() - 1);//trim commas off of the end
-            return trimmedComma;
+            return viewsList;
         }
     }
 
-    public String viewChooser(String uiElementName){
+
+    public static String viewChooser(String uiElementName){
         if(uiElementName.equals("combo")){
             return "spinner";
         }

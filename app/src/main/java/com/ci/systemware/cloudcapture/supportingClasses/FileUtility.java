@@ -17,12 +17,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by john.williams on 8/26/2014.
  */
 public class FileUtility {
-    //static String root = Environment.getExternalStorageDirectory().toString();
+
     static ArrayList<File> dirArray = new ArrayList<File>();
 
     public static String getRootPath(Context context) {
@@ -73,6 +74,21 @@ public class FileUtility {
         dirArray.clear();
     }
 
+    public static ArrayList<File> getListXMLFiles(File parentDir) {//get all xml files from a given directory
+        ArrayList<File> inFiles = new ArrayList<File>();
+        File[] files = parentDir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                inFiles.addAll(getListXMLFiles(file));
+            } else {
+                if(file.getName().endsWith(".xml")){
+                    inFiles.add(file);
+                }
+            }
+        }
+        return inFiles;
+    }
+
     public static void writeToFile(String data,String dir, String fileName) {
         File myFile = new File(dir,fileName);
         try {
@@ -92,24 +108,22 @@ public class FileUtility {
     }
 
 
-    public static String readFromFile(String filepath,Context context) {
+    public static String readFromFile(String filepath) {
         String ret = "";
         try {
-            InputStream inputStream = context.openFileInput(filepath);
+            //InputStream inputStream = context.openFileInput(filepath);
+            FileInputStream  inputStream = new FileInputStream (new File(filepath)); ;
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String receiveString;
+            StringBuilder stringBuilder = new StringBuilder();
 
-            if ( inputStream != null ) {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String receiveString = "";
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    stringBuilder.append(receiveString);
-                }
-
-                inputStream.close();
-                ret = String.valueOf(stringBuilder);
+            while ( (receiveString = bufferedReader.readLine()) != null ) {
+                stringBuilder.append(receiveString);
             }
+            inputStream.close();
+            ret = String.valueOf(stringBuilder);
+
         }
         catch (FileNotFoundException e) {
             Log.e("login activity", "File not found: " + e.toString());

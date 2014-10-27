@@ -2,6 +2,7 @@ package com.ci.systemware.cloudcapture.fragments;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -32,6 +33,7 @@ import com.ci.systemware.cloudcapture.supportingClasses.XMLParser;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -50,9 +52,9 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     EditText portNumberInput;
     EditText usernameInput;
     EditText camidInput;
-    ArrayList<String> templateNames = new ArrayList<String>();
     View settingsDialogView;
     AlertDialog.Builder alertDialogBuilder;
+    ProgressDialog ringProgressDialog;
 
     //task objects
     LoginTask logonTask;
@@ -61,6 +63,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
 
     SharedPreferences preferences;
     static Boolean isFirst_open = true;//flag if fragment is opened for the first time
+    static int RASTFTcount = 0;//keeps track of how many RASTemplateFileTask tasks are created and finished
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,6 +72,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         setCloudBackground();
         context = getActivity();
+        setRASTFTProgressDialog();
         logonTask = new LoginTask(context,this);
         lacTask = new ListAppConfigTask(context,this);
         rasTask = new RASTemplateFileTask(context,this);
@@ -105,6 +109,12 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
                 .fit()
                 .centerInside()
                 .into(cloudBackground);
+    }
+
+    private void setRASTFTProgressDialog() {
+        ringProgressDialog = new ProgressDialog(context);
+        ringProgressDialog.setTitle("Read and Store");
+        ringProgressDialog.setMessage("Reading and storing CAM Template XML ...");
     }
 
     private void loginButtonListener() {
@@ -260,6 +270,8 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         }
         Log.d("MainActivity.listAppConfigTaskProcessFinish()","templateIDs value: " + templateIDs);
         String [] templateNamesArr = templateIDs.split(",");
+        RASTFTcount = templateNamesArr.length;//number of tasks should be equal to size of templateNamesArr array
+        ringProgressDialog.show();
         for(String templateName : templateNamesArr){
             new RASTemplateFileTask(context,rasTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,templateName);
         }
@@ -267,7 +279,20 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
 
     @Override
     public void RASConfigFileTaskProcessFinish(String output) {
-
+        RASTFTcount--;//decrement when tasks finish
+        if(RASTFTcount == 0) {//if there's no tasks left to wait on, do this
+            ringProgressDialog.dismiss();
+            Log.d("RASConfigFileTaskProcessFinish()","RASConfigFileTasks have all finished.");
+            ArrayList<File> filesArrList;
+            filesArrList = FileUtility.getListXMLFiles(new File(FileUtility.getCAMTemplateXMLTempFilePath(context)));
+            for (File file : filesArrList) {
+                try {
+                    XMLParser.readXMLAndTransformViews(file.getAbsolutePath());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
 
