@@ -186,7 +186,8 @@ public class XMLParser {
                     matcher2 = xpp.getAttributeValue(null, "visible");
                     Log.d("readXMLAndTransformViews()", "Value of startTagName, matcher, and matcher2: " +
                             startTagName + "," + matcher + "," + matcher2);
-                    if (!TextUtils.isEmpty(matcher) && matcher2.equals("1")) {
+                    if (!TextUtils.isEmpty(matcher) && matcher2 == "1") {
+                        Log.d("readXMLAndTransformViews()","matcher is non empty and matcher 2 == 1");
                         while(!xpp.getName().equals(startTagName)){//keep going through the tag to make sure there aren't visible="0" strings
                             if(xpp.getName().equals("label")){
                                 fieldLabel = xpp.getText();
@@ -206,6 +207,7 @@ public class XMLParser {
                         Log.d("readXMLAndTransformViews()","values of fieldLabel, uiElementName: " +
                         fieldLabel + "," + uiElementName);
                     }
+                    isVisible = true;//set flag back to true
                 }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();//go to next event
             }
