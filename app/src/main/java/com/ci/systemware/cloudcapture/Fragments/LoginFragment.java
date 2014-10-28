@@ -54,7 +54,8 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     EditText camidInput;
     View settingsDialogView;
     AlertDialog.Builder alertDialogBuilder;
-    ProgressDialog ringProgressDialog;
+    ProgressDialog RASProgressDialog;
+    ProgressDialog XMLProgressDialog;
 
     //task objects
     LoginTask logonTask;
@@ -72,7 +73,8 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         cloudBackground = (ImageView) rootView.findViewById(R.id.imageView2);
         setCloudBackground();
         context = getActivity();
-        setRASTFTProgressDialog();
+        setRASProgressDialog();
+        setXMLProgressDialog();
         logonTask = new LoginTask(context,this);
         lacTask = new ListAppConfigTask(context,this);
         rasTask = new RASTemplateFileTask(context,this);
@@ -111,10 +113,16 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
                 .into(cloudBackground);
     }
 
-    private void setRASTFTProgressDialog() {
-        ringProgressDialog = new ProgressDialog(context);
-        ringProgressDialog.setTitle("Read and Store");
-        ringProgressDialog.setMessage("Reading and storing CAM Template XML ...");
+    private void setRASProgressDialog() {
+        RASProgressDialog = new ProgressDialog(context);
+        RASProgressDialog.setTitle("Read and Store");
+        RASProgressDialog.setMessage("Reading and storing CAM Template XML ...");
+    }
+
+    private void setXMLProgressDialog() {
+        XMLProgressDialog = new ProgressDialog(context);
+        XMLProgressDialog.setTitle("Parse Template XML");
+        XMLProgressDialog.setMessage("Parsing template XML files...");
     }
 
     private void loginButtonListener() {
@@ -151,7 +159,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         });
     }
 
-    private Boolean areSettingsGood(){//check if all needed prefs are set i.e. not empty or null
+    private Boolean doSettingsExist(){//check if all needed prefs are set i.e. not empty or null
         String usernameStr = preferences.getString("username",null).trim();
         String passwordStr = preferences.getString("password",null).trim();
         String camidStr = preferences.getString("camid",null).trim();
@@ -163,7 +171,7 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         editor.putString("username", String.valueOf(usernameInput.getText()));
         editor.putString("password",String.valueOf(passwordInput.getText()));
         editor.apply();//commit the changes and store them in a background thread
-        if(areSettingsGood()) {
+        if(doSettingsExist()) {
             new LoginTask(context, logonTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             TemplateXMLFileTracker.clearTemplateXMLFiles(context);//clear out the CAM template XML files prior to writing the new ones
         }
@@ -264,14 +272,14 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
         Log.d("listAppConfigTaskProcessFinish()","Value of output: " + output);
         String templateIDs = "";
         try {
-            templateIDs = XMLParser.getCAMTemplateIDs(preferences.getString("camid",""),output);
+            templateIDs = XMLParser.getCAMTemplateIDs(output);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Log.d("MainActivity.listAppConfigTaskProcessFinish()","templateIDs value: " + templateIDs);
         String [] templateNamesArr = templateIDs.split(",");
         RASTFTcount = templateNamesArr.length;//number of tasks should be equal to size of templateNamesArr array
-        ringProgressDialog.show();
+        RASProgressDialog.show();
         for(String templateName : templateNamesArr){
             new RASTemplateFileTask(context,rasTask.listener).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,templateName);
         }
@@ -281,17 +289,19 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     public void RASConfigFileTaskProcessFinish(String output) {
         RASTFTcount--;//decrement when tasks finish
         if(RASTFTcount == 0) {//if there's no tasks left to wait on, do this
-            ringProgressDialog.dismiss();
+            RASProgressDialog.dismiss();
             Log.d("RASConfigFileTaskProcessFinish()","RASConfigFileTasks have all finished.");
+            XMLProgressDialog.show();
             ArrayList<File> filesArrList;
             filesArrList = FileUtility.getListXMLFiles(new File(FileUtility.getCAMTemplateXMLTempFilePath(context)));
             for (File file : filesArrList) {
                 try {
-                    XMLParser.readXMLAndTransformViews(file.getAbsolutePath());
+                    XMLParser.readXMLAndMapViews(file.getAbsolutePath());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            XMLProgressDialog.dismiss();
         }
     }
 }

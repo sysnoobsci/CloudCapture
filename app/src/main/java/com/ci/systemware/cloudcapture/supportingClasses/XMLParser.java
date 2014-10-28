@@ -116,17 +116,14 @@ public class XMLParser {
         }
     }
 
-    public static String getCAMTemplateIDs(String camid, String xmlResponse) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
-        if (TextUtils.isEmpty(camid)) {//if nothing is being searched for, return all the xml results
-            Log.d("getCAMTemplateIDs()", "No CAM ID being searched for.");
-            return "camIDNotValid";
-        }
-        else if(TextUtils.isEmpty(xmlResponse)){
+    public static String getCAMTemplateIDs(String xmlResponse) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
+        String camid =  preferences.getString("camid",null);
+        if(TextUtils.isEmpty(xmlResponse)){
             Log.d("getCAMTemplateIDs()", "xmlResponse empty or null");
             return "xmlResponseIsEmpty";
         }
         else {
-            xmlResponse = xmlResponse.replace("<![CDATA[", "").replace("]]>", "");//remove all the CDATA tags so XML can be parsed properly
+            xmlResponse = xmlResponse.replace("<![CDATA[", "").replace("]]>", "").replace("]]", "");//remove all the CDATA tags so XML can be parsed properly
             Log.d("getCAMTemplateIDs()", "xmlResponse value: " + xmlResponse);
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -135,13 +132,12 @@ public class XMLParser {
             int eventType = xpp.getEventType();
             StringBuilder tagText = new StringBuilder();
             String matcher;
+
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG){
                     matcher = xpp.getAttributeValue(null, "camid");
-                    Log.d("getCAMTemplateIDs()", "Value of matcher: " + matcher);
-                    String camidpref = preferences.getString("camid",null);
-                    if (matcher != null && matcher.equals(camidpref)) {//if the tag name contains the camid, get the template name
-                        String templateName = xpp.getAttributeValue(null, "label");
+                    if (matcher != null && matcher.equals(camid)) {//if the tag name contains the camid, get the template name
+                        String templateName = xpp.getAttributeValue(null,"label");
                         if(templateName.contains(TEMPLATE_PREFIX)) {//if template name contains the right prefix, add it
                             Log.d("getCAMTemplateIDs()", "templateName value: " + templateName);
                             tagText.append(templateName).append(",");
@@ -149,34 +145,38 @@ public class XMLParser {
                     }
                 }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();
-            }
+            }//end of xmlString
             String trimmedComma = tagText.toString().substring(0, tagText.toString().length() - 1);//trim commas off of the end
             return trimmedComma;
         }
     }
 
-    public static ArrayList<String> readXMLAndTransformViews(String templateXMLFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
+    public static ArrayList<String> readXMLAndMapViews(String templateXMLFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
         if(TextUtils.isEmpty(templateXMLFileName)){
-            Log.d("readXMLAndTransformViews()", "templateXMLFileName empty or null");
+            Log.d("readXMLAndMapViews()", "templateXMLFileName empty or null");
             return null;
         }
         else {
-            Log.d("readXMLAndTransformViews()","Beginning read of file: " + templateXMLFileName);
+            Log.d("readXMLAndMapViews()","Beginning read of file: " + templateXMLFileName);
             String xmlString = FileUtility.readFromFile(templateXMLFileName);
-            xmlString = xmlString.replace("<![CDATA[", "").replace("]]>", "");//remove all the CDATA tags so XML can be parsed properly
-            Log.d("readXMLAndTransformViews()", "xmlResponse value: " + xmlString);
+            xmlString = xmlString.replace("<![CDATA[", "").replace("]]>", "").replace("]]", "");//remove all the CDATA tags so XML can be parsed properly
+            Log.d("readXMLAndMapViews()", "xmlResponse value: " + xmlString);
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser xpp = factory.newPullParser();
             xpp.setInput(new StringReader(xmlString));//get the XML string that was created from parsing the query response
             int eventType = xpp.getEventType();
-            StringBuilder tagText = new StringBuilder();
+            //instantiating variables
+            int eleCount = 0;
             String matcher;
             String matcher2;
             String fieldLabel = null;
-            Boolean isVisible = true;//flag to see if view is visible
+            Boolean isVisible;//flag to see if view is visible
+            Boolean isEndTag = false;//flag to see if a certain tag has been hit again
+            Boolean isTypeFound = false;
+            Boolean isLabelFound = false;
             String startTagName;
-            String uiElementName = null;
+            String uiElementType = null;
             ArrayList<String> viewsList = new ArrayList<String>();
 
             while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -184,39 +184,58 @@ public class XMLParser {
                     startTagName = xpp.getName();
                     matcher = xpp.getAttributeValue(null, "name");
                     matcher2 = xpp.getAttributeValue(null, "visible");
-                    Log.d("readXMLAndTransformViews()", "Value of startTagName, matcher, and matcher2: " +
-                            startTagName + "," + matcher + "," + matcher2);
-                    if (!TextUtils.isEmpty(matcher) && matcher2 == "1") {
-                        Log.d("readXMLAndTransformViews()","matcher is non empty and matcher 2 == 1");
-                        while(!xpp.getName().equals(startTagName)){//keep going through the tag to make sure there aren't visible="0" strings
-                            if(xpp.getName().equals("label")){
-                                fieldLabel = xpp.getText();
+                    if (matcher!=null && matcher2!= null && matcher2.equals("1")){
+                        isVisible = true;//found a visible ui element
+                        Log.d("readXMLAndMapViews()","UI input element found");
+                        xpp.next();//advance to next event
+                        Log.d("readXMLAndMapViews()","Checking sub tags inside <" + startTagName + ">");
+                        while(!isEndTag){//iterate through tags within the tag to make sure element is visible
+                            if(xpp.getName() != null && xpp.getName().equals("type") && !isTypeFound){
+                                xpp.next();
+                                uiElementType = xpp.getText();
+                                Log.d("readXMLAndMapViews()", "value of uiElementType: " + uiElementType);
+                                isTypeFound = true;
                             }
-                            if(xpp.getName().equals("type")){
-                                uiElementName = xpp.getText();
+                            else if(xpp.getName() != null && xpp.getName().equals("label") && !isLabelFound){
+                                xpp.next();
+                                if(!TextUtils.isEmpty(xpp.getText())) {//don't want the values getting overidden by empty values
+                                    fieldLabel = xpp.getText();
+                                    Log.d("readXMLAndMapViews()", "value of fieldLabel: " + fieldLabel);
+                                }
+                                isLabelFound = true;
                             }
-                            if(xpp.getAttributeValue(null, "visible").equals("0")){
+                            if(xpp.getAttributeValue(null, "visible")!= null && xpp.getAttributeValue(null, "visible").equals("0")){
+                                Log.d("readXMLAndMapViews()","UI element " + uiElementType + " will be non-visible. Not added to visible UI elements");
                                 isVisible = false;
-                                uiElementName = "";
+                                uiElementType = "";
+                            }
+                            if(xpp.getName() != null && xpp.getName().equals(startTagName)) {//if the end tag is found, set isEndTag to true
+                                Log.d("readXMLAndMapViews()","end tag <" + startTagName + "> found.");
+                                isEndTag = true;
                             }
                             xpp.next();
+                        }//end of while loop
+                        if(!TextUtils.isEmpty(uiElementType)&&isVisible){
+                            viewsList.add(fieldLabel + "," + viewChooser(uiElementType));
+                            Log.d("readXMLAndMapViews()", "value of viewsList[" + eleCount + "]: " + viewsList.get(eleCount));
+                            eleCount++;
                         }
-                    }
-                    if(!TextUtils.isEmpty(uiElementName)&&isVisible){
-                        viewsList.add(fieldLabel + "," + uiElementName);
-                        Log.d("readXMLAndTransformViews()","values of fieldLabel, uiElementName: " +
-                        fieldLabel + "," + uiElementName);
-                    }
-                    isVisible = true;//set flag back to true
+                        fieldLabel = "";
+                        uiElementType = "";
+                        isVisible = true;//reset flags
+                        isEndTag = false;
+                        isTypeFound = false;
+                        isLabelFound = false;
+                    }//end of visible UI element being found
                 }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();//go to next event
-            }
+            }//end of xmlstring to be parsed
             return viewsList;
         }
     }
 
 
-    public static String viewChooser(String uiElementName){
+    public static String viewChooser(String uiElementName){//converts the CI UI element to what it would be as an Android view
         if(uiElementName.equals("combo")){
             return "spinner";
         }
@@ -227,7 +246,7 @@ public class XMLParser {
             return "textView";
         }
         else{
-            return "noView";//if sutiable Android  view isn't found
+            return "noView";//if suitable Android view isn't found
         }
     }
 }
