@@ -222,7 +222,7 @@ public class XMLParser {
                         }
                         fieldLabel = "";
                         uiElementType = "";
-                        isVisible = true;//reset flags
+                        //reset flags
                         isEndTag = false;
                         isTypeFound = false;
                         isLabelFound = false;
