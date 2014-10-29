@@ -25,6 +25,8 @@ import java.util.List;
 public class FileUtility {
 
     static ArrayList<File> dirArray = new ArrayList<File>();
+    private static char pathSeparator = '/';
+    private static char extensionSeparator = '.';
 
     public static String getRootPath(Context context) {
         return context.getFilesDir().toString();
@@ -157,4 +159,20 @@ public class FileUtility {
                 outChannel.close();
         }
     }
+
+    public static String extension(String fullPath) { //gets file extension
+        int dot = fullPath.lastIndexOf(extensionSeparator);
+        return fullPath.substring(dot + 1);
+    }
+
+    public static String filename(String fullPath) { // gets filename without extension
+        int dot = fullPath.lastIndexOf(extensionSeparator);
+        int sep = fullPath.lastIndexOf(pathSeparator);
+        return fullPath.substring(sep + 1, dot);
+    }
+
+    public static String fileNameAndExt(String fullPath){ //gets file name + extension
+        return filename(fullPath) + extension(fullPath);
+    }
+
 }

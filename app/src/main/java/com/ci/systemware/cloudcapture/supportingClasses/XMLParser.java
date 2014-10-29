@@ -151,14 +151,14 @@ public class XMLParser {
         }
     }
 
-    public static ArrayList<String> readXMLAndMapViews(String templateXMLFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
-        if(TextUtils.isEmpty(templateXMLFileName)){
-            Log.d("readXMLAndMapViews()", "templateXMLFileName empty or null");
-            return null;
+    public static void readXMLAndMapViews(String templateFullFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
+        String templateFileName = FileUtility.fileNameAndExt(templateFullFileName);
+        if(TextUtils.isEmpty(templateFullFileName)){
+            Log.d("readXMLAndMapViews()", "templateFullFileName empty or null");
         }
         else {
-            Log.d("readXMLAndMapViews()","Beginning read of file: " + templateXMLFileName);
-            String xmlString = FileUtility.readFromFile(templateXMLFileName);
+            Log.d("readXMLAndMapViews()","Beginning read of file: " + templateFullFileName);
+            String xmlString = FileUtility.readFromFile(templateFullFileName);
             xmlString = xmlString.replace("<![CDATA[", "").replace("]]>", "").replace("]]", "");//remove all the CDATA tags so XML can be parsed properly
             Log.d("readXMLAndMapViews()", "xmlResponse value: " + xmlString);
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -230,8 +230,8 @@ public class XMLParser {
                 }//end of XmlPullParser.START_TAG event
                 eventType = xpp.next();//go to next event
             }//end of xmlstring to be parsed
-            return viewsList;
-        }
+            Template2LayoutTracker.map.put(templateFileName,viewsList);//add the template file name and its list of visible UI elements
+        }//end of else statement
     }
 
 
