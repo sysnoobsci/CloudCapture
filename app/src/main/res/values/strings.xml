@@ -9,6 +9,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
+    <string name="action_login">Login</string>
 
     <!--Possible messages to appear in the ToastMessageTask-->
     <string name="noConnectionMessage">Connection to CI Server failed/timed out. Check CI Connection Profile under Settings.</string>
@@ -29,6 +30,13 @@
     <string name="DupCIConnProfileSavedMessage">Duplicate CI Connection Profile Found.</string>
     <string name="logoffSuccessMessage">Successfully logged off.</string>
     <string name="logoffFailedMessage">Logoff Failed.</string>
+    <string name="logonSuccessMessage">Successfully logged in.</string>
+    <string name="logonFailedMessage">Login Failed.</string>
+    <string name="areSettingsGoodMessage">Username, Password, or CAM ID field is invalid/empty.</string>
     <!--Possible messages to appear in the ToastMessageTask-->
+
+    <!--Messages within app-->
+
+    <string name="emptyPanelMessage">Panel is empty. Please go to settings, CAM settings, and add the CAM template IDs.</string>
 
 </resources>

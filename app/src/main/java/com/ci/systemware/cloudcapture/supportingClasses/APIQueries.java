@@ -2,23 +2,17 @@ package com.ci.systemware.cloudcapture.supportingClasses;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.ci.systemware.cloudcapture.aSyncTasks.APITask;
+import com.ci.systemware.cloudcapture.aSyncTasks.ApiCallTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.ToastMsgTask;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +27,7 @@ public class APIQueries {
     private static int action_timeout = 5000;//default values in milliseconds of timeouts
     private static int lilo_timeout = 5000;
     private static int upload_timeout = 30000;
+    SharedPreferences preferences;
 
     public APIQueries(Context context) {
         setContext(context);
@@ -56,7 +51,7 @@ public class APIQueries {
     }
 
     void setTimeouts() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         action_timeout = Integer.parseInt(preferences.getString("actiontimeout_preference", String.valueOf(action_timeout))) * 1000;
         lilo_timeout = Integer.parseInt(preferences.getString("lilotimeout_preference", String.valueOf(lilo_timeout))) * 1000;
         upload_timeout = Integer.parseInt(preferences.getString("uploadtimeout_preference", String.valueOf(upload_timeout))) * 1000;
@@ -70,9 +65,8 @@ public class APIQueries {
     }
 
     String targetCIQuery() {
-        LogonSession lilobj = new LogonSession(context);
-        String targetCIQuery = "http://" + lilobj.getHostname() + "." +
-                lilobj.getDomain() + ":" + lilobj.getPortnumber() + "/ci";
+        String targetCIQuery = "http://" + preferences.getString("hostname",null) + "." +
+                preferences.getString("domain", null) + ":" + preferences.getString("portnumber", null) + "/ci";
         return targetCIQuery;
     }
 
@@ -81,8 +75,8 @@ public class APIQueries {
         Boolean uploadSuccess;
         ArrayList<Object> actionargs = args;
         actionargs.add("act,createtopic");
-        HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -90,7 +84,8 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("Variable", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
+        XMLParser xobj = new XMLParser(context);
+        xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         ToastMsgTask.isFileUploadStatus(getContext(), getActionresult());
         uploadSuccess = getActionresult();
@@ -104,8 +99,8 @@ public class APIQueries {
             InterruptedException, IOException, XmlPullParserException {
         ArrayList<Object> actionargs = args;
         actionargs.add("act,listversion");
-        HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(action_timeout, TimeUnit.MILLISECONDS);
@@ -113,7 +108,8 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("listversionQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
+        XMLParser xobj = new XMLParser(context);
+        xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         if (getActionresult()) {//if the ping is successful(i.e. user logged in)
             Log.d("listversionQuery()", "CI Server listversion successful.");
@@ -129,43 +125,14 @@ public class APIQueries {
         }
     }
 
-    //logon
-    public Boolean logonQuery(ArrayList<Object> args) throws Exception {
-        ArrayList<Object> actionargs = args;
-        actionargs.add("act,logon");
-        HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
-        try {
-            //apitaskobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, targetCIQuery())
-            //          .get(lilo_timeout, TimeUnit.MILLISECONDS);
-            apitaskobj.execute(targetCIQuery())
-                    .get(lilo_timeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException te) {
-            ToastMsgTask.noConnectionMessage(getContext());
-        }
-        Log.d("logonQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
-        isActionSuccessful(xobj.getTextTag());
-        Boolean logonStatus = getActionresult();
-        if (logonStatus) {//if the ping is successful(i.e. user logged in)
-            LogonSession.setSid(apitaskobj.getResponse());
-            Log.d("logonQuery()", "CI Server logon successful.");
-        } else {
-            Log.d("logonQuery()", "CI Server logon failed.");
-        }
-        resetResult();//reset action result after checking it
-        QueryArguments.clearList();//clear argslist after query
-        return logonStatus;
-    }
-
     //logoff
     public Boolean logoffQuery(ArrayList<Object> args) throws ExecutionException,
             InterruptedException, IOException, XmlPullParserException {
 
         ArrayList<Object> actionargs = args;
         actionargs.add("act,logoff");
-        HttpEntity entity = mebBuilder(actionargs);
-        APITask apitaskobj = new APITask(entity);
+        HttpEntity entity = MultiPartEntityBuilder.mebBuilder(actionargs);
+        ApiCallTask apitaskobj = new ApiCallTask(entity);
         try {
             apitaskobj.execute(targetCIQuery())
                     .get(lilo_timeout, TimeUnit.MILLISECONDS);
@@ -173,7 +140,8 @@ public class APIQueries {
             ToastMsgTask.noConnectionMessage(getContext());
         }
         Log.d("logoffQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
+        XMLParser xobj = new XMLParser(context);
+        xobj.parseXMLfunc(apitaskobj.getResponse());
         isActionSuccessful(xobj.getTextTag());
         Boolean logoffStatus = getActionresult();
         ToastMsgTask.isLogoffSuccessMessage(context, logoffStatus);
@@ -182,85 +150,22 @@ public class APIQueries {
         return logoffStatus;
     }
 
-    //ping
-    public Boolean pingQuery() throws ExecutionException, InterruptedException, IOException, XmlPullParserException {//pings the CI server, returns true if ping successful
-        if (!LogonSession.doesSidExist()) {//check if there is an sid (i.e. a session established)
-            Log.d("pingQuery()", "Empty sid found. Need to login");
-            return false;//if no session established, return false
-        }
-        QueryArguments.addArg("act,ping");
-        QueryArguments.addArg("sid," + LogonSession.getSid());
-        HttpEntity entity = mebBuilder(QueryArguments.getArgslist());
-        APITask apitaskobj = new APITask(entity);
-        try {
-            apitaskobj.execute(targetCIQuery())
-                    .get(action_timeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException te) {
-            ToastMsgTask.noConnectionMessage(getContext());
-        }
-        Log.d("pingQuery()", "apitaskobj.getResponse() value: " + apitaskobj.getResponse());
-        XMLParser xobj = new XMLParser(apitaskobj.getResponse());
-        isActionSuccessful(xobj.getTextTag());
-        if (getActionresult()) {//if the ping is successful(i.e. user logged in)
-            Log.d("pingQuery()", "CI Server ping successful.");
-            resetResult();//reset action result after checking it
-            QueryArguments.clearList();//clear argslist after query
-            return true;
-        } else {
-            Log.d("pingQuery()", "CI Server ping failed.");
-            resetResult();//reset action result after checking it
-            QueryArguments.clearList();//clear argslist after query
-            return false;
-        }
-    }
-
     //retrieve
-    public String retrieveQuery(String tid) {//pings the CI server, returns true if ping successful
-        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + LogonSession.getSid();
+    public String retrieveQuery(String tid) {//retrieves resources from content server
+        String retrieveQuery = targetCIQuery() + "?act=retrieve&tid=" + tid + "&sid=" + preferences.getString("SID",null);
         return retrieveQuery;
     }
 
-    //build MultiPartEntity after checking type of the args
-    HttpEntity mebBuilder(ArrayList<Object> args) throws UnsupportedEncodingException {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        for (Object larg : args) {//check each argument for class type and act accordingly
-            if (larg != null) {//make sure arg isn't null
-                Log.d("mebBuilder()", "larg.getClass() value: " + larg.getClass());
-                if (larg.getClass().equals(String.class)) {//if type of arg is String, do this
-                    int i = 0;
-                    int j = 1;
-                    String[] parts = larg.toString().split(",");
-                    while (j < parts.length) {//allows for multiple key-value pairs
-                        builder.addPart(parts[i], new StringBody(parts[j]));
-                        i += 2;
-                        j += 2;
-                    }
-                }
-                if (larg.getClass().equals(File.class)) {//if type of arg is File, do this
-                    builder.addPart("file", new FileBody((File) larg));
-                }
-                if (larg.getClass().getName().startsWith("android.net.Uri$")) {//if type of arg is Uri, do this
-                    Uri imageUri = (Uri) larg;
-                    File newImage = new File(imageUri.getPath());
-                    Log.d("Variable", "imageUri.getPath().toString() value: " + imageUri.getPath());
-                    builder.addPart("file", new FileBody(newImage));
-                }
-            }
-        }
-        HttpEntity entity = builder.build();
-        return entity;
-    }
-
     public ArrayList<String> getVersionInfo(String xmlResponse) throws IOException, XmlPullParserException {
-        XMLParser xobj = new XMLParser(xmlResponse);
+        XMLParser xobj = new XMLParser(context);
         ArrayList<String> versionInfo = new ArrayList<String>();
-        String path = xobj.findTagText("path");//get the path name
-        String xid = xobj.findTagText("xid");//get the xid
-        String dsids = xobj.findTagText("dsid");//get the DSIDs
-        String cts = xobj.findTagText("cts");//get the DSIDs
-        String bytes = xobj.findTagText("bytes");//get the bytes
-        String fmt = xobj.findTagText("fmt");//get the format
-        String ver = xobj.findTagText("v");//get the version number
+        String path = xobj.getElementText("path", xmlResponse);//get the path name
+        String xid = xobj.getElementText("xid", xmlResponse);//get the xid
+        String dsids = xobj.getElementText("dsid", xmlResponse);//get the DSIDs
+        String cts = xobj.getElementText("cts", xmlResponse);//get the DSIDs
+        String bytes = xobj.getElementText("bytes", xmlResponse);//get the bytes
+        String fmt = xobj.getElementText("fmt", xmlResponse);//get the format
+        String ver = xobj.getElementText("v", xmlResponse);//get the version number
         String[] pathsarr = path.split(",");//arrays should all be the same size
         String[] xidarr = xid.split(",");
         String[] dsidsarr = dsids.split(",");

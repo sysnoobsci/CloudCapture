@@ -9,15 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/imageView2"
-        android:src="@drawable/clouds_parlx_bg1" />
-
-    <ImageView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:id="@+id/imageView"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:src= "@drawable/sw_background"/>
+        android:src="@drawable/clouds_parlx_bg1"
+        android:background="#0078c9" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -38,26 +31,19 @@
             android:id="@+id/textView"
             android:layout_gravity="center_horizontal"
             android:textSize="23sp"
-            android:textColor="#0078c9"
+            android:textColor="@color/White"
             android:background="#00000000"
             android:layout_centerHorizontal="true" />
     </LinearLayout>
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        android:layout_alignBottom="@+id/imageView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-    </RelativeLayout>
-
     <TableLayout
         android:layout_width="fill_parent"
-        android:layout_height="250dp"
+        android:layout_height="175dp"
+        android:id="@+id/tableLayout"
         android:layout_below="@+id/linearLayout"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false"
+        android:layout_centerHorizontal="true">
 
         <TableRow
             android:layout_width="fill_parent"
@@ -67,15 +53,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Username"
-                android:id="@+id/textView2"
+                android:typeface="serif"
+                android:id="@+id/usernameLabel"
                 android:textSize="20sp"
                 android:paddingEnd="50dp"
-                android:paddingStart="50dp" />
+                android:layout_marginLeft="25dp" />
 
             <EditText
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText2" />
+                android:typeface="serif"
+                android:id="@+id/usernameInput"
+                android:hint="Enter Username"
+                android:layout_marginRight="25dp" />
         </TableRow>
 
         <TableRow
@@ -86,19 +76,60 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Password"
-                android:id="@+id/textView3"
+                android:typeface="serif"
+                android:id="@+id/passwordLabel"
                 android:textIsSelectable="false"
                 android:textSize="20sp"
                 android:paddingEnd="50dp"
-                android:paddingStart="50dp" />
+                android:layout_marginLeft="25dp" />
 
             <EditText
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText3" />
+                android:typeface="serif"
+                android:id="@+id/passwordInput"
+                android:inputType="textPassword"
+                android:hint="Enter Password"
+                android:layout_marginRight="25dp" />
         </TableRow>
 
     </TableLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:typeface="serif"
+        android:id="@+id/loginButton"
+        android:layout_below="@+id/tableLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/buttonborder"
+        android:textColor="@color/White"
+        android:width="5dp" android:color="#000000"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Host Settings"
+        android:typeface="serif"
+        android:id="@+id/hSettingsButton"
+        android:layout_below="@+id/loginButton"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/buttonborder"
+        android:textColor="@color/White" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CAM Template Settings"
+        android:typeface="serif"
+        android:id="@+id/camTemplateSettingsButton"
+        android:layout_below="@+id/hSettingsButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/buttonborder"
+        android:textColor="@color/White" />
 
 
 </RelativeLayout>

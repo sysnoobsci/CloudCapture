@@ -12,14 +12,17 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.EditText;
 
+import com.ci.systemware.cloudcapture.interfaces.PingTaskInterface;
 import com.ci.systemware.cloudcapture.supportingClasses.APIQueries;
-import com.ci.systemware.cloudcapture.supportingClasses.LogonSession;
 import com.ci.systemware.cloudcapture.supportingClasses.QueryArguments;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by adrian.meraz on 10/8/2014.
  */
-public class UploadFileTask extends AsyncTask<String, String, String>{
+public class UploadFileTask  extends AsyncTask<String, String, String> implements PingTaskInterface {
+
     Activity activity;
     Context context;
     EditText description;
@@ -29,12 +32,17 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
     SharedPreferences preferences;
     APIQueries apiobj;
     private boolean success;
+    Boolean pingResult;
+    PingTask pingTask;
+
 
     public UploadFileTask(Context context, EditText description, Object file2upload){
         this.activity = (Activity) context;
         this.context = context;
         this.description = description;
         this.file2upload = file2upload;
+        pingTask = new PingTask(context);
+        pingTask.delegate = this;
         apiobj = new APIQueries(context);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         topicTemplateName = preferences.getString("camName_preference", null);
@@ -61,15 +69,14 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
     }
 
     protected String doInBackground(String... params) {
-        LogonSession lsobj = new LogonSession(context);
         if (uploadCheck(description, file2upload)) {
-            Boolean logonStatus = null;
             try {
-                logonStatus = lsobj.tryLogin(context);
+                new PingTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+                        .get(preferences.getInt("lilotimeout_preference", 5000), TimeUnit.MILLISECONDS);//wait or ping task to execute
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (logonStatus) {
+            if (pingResult) {
                 Log.d("Message", "CI Login successful and ready to upload file.");
                 createTopic();//create a topic instance object
             } else {
@@ -91,9 +98,9 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
             QueryArguments.addArg("tplid," + topicTemplateName);
             QueryArguments.addArg("name," + description.getText().toString());
             QueryArguments.addArg("detail,y");
-            QueryArguments.addArg("sid," + LogonSession.getSid());
+            QueryArguments.addArg("sid," + preferences.getString("SID",null));
             QueryArguments.addArg(file2upload);
-            Log.d("Upload Process ImageUri= ", file2upload.toString());
+            Log.d("createTopic()", "Value of file2upload: " + file2upload.toString());
             try {
                 setSuccess(apiobj.createtopicQuery(QueryArguments.getArgslist()));//get result from createTopocQuery
             } catch (Exception e) {
@@ -116,5 +123,10 @@ public class UploadFileTask extends AsyncTask<String, String, String>{
         }
         Log.d("uploadCheck()", "upload check passed.");
         return true;//if pic was taken and there is a non-empty description, return true
+    }
+
+    public void pingTaskProcessFinish(String output){
+        pingResult = Boolean.parseBoolean(output);//this receives result fired from async class of onPostExecute(result) method.
+
     }
 }

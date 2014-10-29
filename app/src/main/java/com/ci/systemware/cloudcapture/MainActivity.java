@@ -5,18 +5,20 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
+import com.ci.systemware.cloudcapture.fragments.LoginFragment;
+import com.ci.systemware.cloudcapture.fragments.NavigationDrawerFragment;
+import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 
 
 public class MainActivity extends Activity
@@ -32,27 +34,52 @@ public class MainActivity extends Activity
      */
     private CharSequence mTitle;
 
+    private Boolean first_open = true;//keeps track of if the app is opening for the first time to show the home screen
+
+
+    public Boolean getFirst_open() {
+        return first_open;
+    }
+
+    public void setFirst_open(Boolean first_open) {
+        this.first_open = false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mTitle = getTitle();
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
+
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+        Log.d("Variable", "Value of argument position: " + position);
+        Fragment fragment;
+        if (getFirst_open()) {//if first time opening app, show login screen fragment
+            position = -1;
+            setFirst_open(false);
+        }
         FragmentManager fragmentManager = getFragmentManager();
+        switch (position) {
+            case 0:
+                fragment = new SeeBUFragment();
+                break;
+            default:
+                fragment = new LoginFragment();
+                break;
+        }
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, fragment)
                 .commit();
     }
 

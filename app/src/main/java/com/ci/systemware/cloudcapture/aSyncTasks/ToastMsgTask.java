@@ -132,4 +132,25 @@ public class ToastMsgTask extends AsyncTask<String, String, String> {
         new ToastMsgTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                 toastMessage);
     }
+
+    public static void isLogonSuccessMessage(Context context, boolean isSuccess){
+        String toastMessage;
+        Log.d("isLogonSuccessMessage()","Value of isSuccess: " + isSuccess);
+        if(isSuccess) {
+            toastMessage = context.getResources().getString(R.string.logonSuccessMessage);
+            Log.d("isLogonSuccessMessage()", "CI Server logon successful.");
+        }
+        else{
+            toastMessage = context.getResources().getString(R.string.logonFailedMessage);
+            Log.d("isLogonSuccessMessage()", "CI Server logon failed.");
+        }
+        new ToastMsgTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                toastMessage);
+    }
+
+    public static void areSettingsGoodMessage(Context context){
+        new ToastMsgTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                context.getResources().getString(R.string.areSettingsGoodMessage));
+    }
+
 }

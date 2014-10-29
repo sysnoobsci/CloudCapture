@@ -3,6 +3,7 @@ package com.ci.systemware.cloudcapture.supportingClasses;
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
+import android.content.Context;
 import android.util.Log;
 
 import java.io.File;
@@ -17,15 +18,15 @@ public class TempFileTracker {
 
     public static void addTempFileToList(String filePath, int version) {//add temp files and versions
         tempFileInfo.put(version, filePath);//version number is the key, filepath is the value
-        Log.d("addTempFileToList()","file " + filePath + " added to the list");
+        Log.d("addTemplateFileToList()","file " + filePath + " added to the list");
     }
 
     public static String getTempFilePath(int version){
         return tempFileInfo.get(version);
     }
 
-    public static void clearTempFiles(){
-        File dir = new File(FileUtility.getTempFilePath());
+    public static void clearTempFiles(Context context){
+        File dir = new File(FileUtility.getTempFilePath(context));
         if (dir.isDirectory()) {
             String[] children = dir.list();
             for (String aChildren : children) {

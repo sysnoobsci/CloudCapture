@@ -3,8 +3,12 @@ package com.ci.systemware.cloudcapture.aSyncTasks;
 /**
  * Created by adrian.meraz on 10/10/2014.
  */
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.ci.systemware.cloudcapture.MainActivity;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -20,56 +24,36 @@ import java.io.InputStreamReader;
 /**
  * Created by Adrian Meraz on 8/19/2014.
  */
-public class APITask extends AsyncTask<String, Void, String> {
+public class ApiCallTask extends AsyncTask<String, Void, String> {
 
     HttpClient httpclient = new DefaultHttpClient();
     HttpPost httppost;
 
-    private static String response;
-    private static HttpEntity entity;
-    private static int ID = 0;
-    private static int taskID = 0;
+    private String response;
+    private HttpEntity entity;
+    private int ID = 0;//Task Unique ID
 
     public String getResponse() {
         return response;
     }
 
     public void setResponse(String result) {
-        this.response = result;
+        response = result;
     }
 
-    public HttpEntity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(HttpEntity entity) {
+    public ApiCallTask(HttpEntity entity) {
         this.entity = entity;
-    }
-
-    public int getTaskID() {
-        return taskID;
-    }
-
-    public void setTaskID(int taskID) {
-        this.taskID = taskID;
-    }
-
-    public APITask(HttpEntity entity) {
-        setEntity(entity);
-        setTaskID(this.ID);//set unique ID for task
-        ID++;
     }
 
     @Override
     protected void onPreExecute() {
-
     }
 
     @Override
     protected String doInBackground(String... aurl) {
         StringBuilder total = new StringBuilder();
         httppost = new HttpPost(aurl[0]);
-        httppost.setEntity(getEntity());
+        httppost.setEntity(entity);
         try {
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity ht = response.getEntity();
@@ -83,11 +67,12 @@ public class APITask extends AsyncTask<String, Void, String> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        setResponse(total.toString());
         return total.toString();
     }
 
     protected void onPostExecute(String result) {
-        Log.d("onPostExecute()", "APITask[" + getTaskID() + "].onPostExecute response: " + getResponse());
+        setResponse(result);
+        Log.d("onPostExecute()", "APITask[" + ID + "].onPostExecute response: " + getResponse());
+        ID++;//increment ID number of task
     }
 }//end of ReqTask

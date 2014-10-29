@@ -74,7 +74,7 @@ public class DownloadFileTask extends AsyncTask<String, String, String> {
                 fragmentChosen = arg1;
             }
         }
-        if(dirPath.equals(FileUtility.getTempFilePath())){//check if the file is to be written to the temp path
+        if(dirPath.equals(FileUtility.getTempFilePath(context))){//check if the file is to be written to the temp path
             if(TempFileTracker.isTempFileCached(fullFilePathName, versionNumber)) {//if file is already cached, don't download it again
                 ToastMsgTask.fileIsCachedMessage(context);
                 return "cached";

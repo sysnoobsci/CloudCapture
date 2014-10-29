@@ -1,4 +1,4 @@
-package com.ci.systemware.cloudcapture;
+package com.ci.systemware.cloudcapture.fragments;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+
+import com.ci.systemware.cloudcapture.R;
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
+import com.ci.systemware.cloudcapture.adapters.ExpandableListAdapter;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +34,7 @@ import java.util.List;
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
-public class NavigationDrawerFragment extends Fragment {
+public class NavigationDrawerFragment extends Fragment{
 
     /**
      * Remember the position of the selected item.
@@ -49,8 +55,8 @@ public class NavigationDrawerFragment extends Fragment {
     private ExpandableListView mDrawerListView;
     private List<String> listDataHeader;
     private HashMap<String, List<String>> listDataChild;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
+    public static ActionBarDrawerToggle mDrawerToggle;
+    public static DrawerLayout mDrawerLayout;
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -77,6 +83,8 @@ public class NavigationDrawerFragment extends Fragment {
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
     }
+
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -108,23 +116,29 @@ public class NavigationDrawerFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
-                Fragment fragment = new Home_Fragment();
+                Fragment fragment = new LoginFragment();
                 FragmentManager fragmentManager = getFragmentManager();
                 switch (groupPosition) {
                     case 0:
                         switch (childPosition) {
                             case 0:
-                                fragment = new Internal_Gallery_Fragment();
+                                fragment = new SeeBUFragment();
                                 break;
                             case 1:
-                                fragment = new File_Explorer_Fragment();
+                                fragment = new SeeGroupFragment();
+                                break;
+                            case 2:
+                                fragment = new SeeDTFragment();
                                 break;
                         }
                         break;
                     case 1://need to flesh out fragments that go under Content Server
                         switch (childPosition) {
                             case 0:
-                                fragment = new View_Versions_Fragment();
+                                fragment = new NSearchFragment();
+                                break;
+                            case 1:
+                                fragment = new NUploadFragment();
                                 break;
                         }
                         break;
@@ -146,20 +160,22 @@ public class NavigationDrawerFragment extends Fragment {
         listDataChild = new HashMap<String, List<String>>();
 
         //Group Items Capture and Contend Cloud
-        listDataHeader.add("Capture");
-        listDataHeader.add("Content Cloud");
+        listDataHeader.add("Application");
+        listDataHeader.add("Functions");
 
-        //Capture group items
-        List<String> capture = new ArrayList<String>();
-        capture.add("Capture Image");
-        capture.add("File Explorer");
+        //Application group items
+        List<String> application = new ArrayList<String>();
+        application.add("Business Unit");
+        application.add("Groups");
+        application.add("Document Types");
 
-        //ContentCloud group items
-        List<String> content_cloud = new ArrayList<String>();
-        content_cloud.add("Images/Documents");
+        //Functions group items
+        List<String> functions = new ArrayList<String>();
+        functions.add("Search");
+        functions.add("Upload");
 
-        listDataChild.put(listDataHeader.get(0), capture);
-        listDataChild.put(listDataHeader.get(1), content_cloud);
+        listDataChild.put(listDataHeader.get(0), application);
+        listDataChild.put(listDataHeader.get(1), functions);
     }
 
     public boolean isDrawerOpen() {
@@ -175,7 +191,7 @@ public class NavigationDrawerFragment extends Fragment {
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
-
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);//lock for now until login
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
@@ -222,12 +238,13 @@ public class NavigationDrawerFragment extends Fragment {
                 getActivity().invalidateOptionsMenu(); // calls onPrepareOptionsMenu()
             }
         };
-
+        mDrawerToggle.setDrawerIndicatorEnabled(false);//disable drawer toggle until successful login
         // If the user hasn't 'learned' about the drawer, open it to introduce them to the drawer,
         // per the navigation drawer design guidelines.
-        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
+        /*if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
             mDrawerLayout.openDrawer(mFragmentContainerView);
-        }
+
+        }*/
 
         // Defer code dependent on restoration of previous instance state.
         mDrawerLayout.post(new Runnable() {
@@ -298,11 +315,11 @@ public class NavigationDrawerFragment extends Fragment {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if (item.getItemId() == R.id.action_home) {
+        if (item.getItemId() == R.id.action_login) {
             FragmentManager fragmentManager = getFragmentManager();
-            Fragment fragment = new Home_Fragment();
+            Fragment fragment = new LoginFragment();
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment, "HOME")
+                    .replace(R.id.container, fragment, "LOGIN")
                     .addToBackStack(null)
                     .commit();
             return true;
@@ -332,4 +349,6 @@ public class NavigationDrawerFragment extends Fragment {
          */
         void onNavigationDrawerItemSelected(int position);
     }
+
+
 }
