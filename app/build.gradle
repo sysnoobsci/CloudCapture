@@ -10,7 +10,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.systemware.cloudcapture"
+        applicationId "com.ci.systemware.cloudcapture2"
         minSdkVersion 15
         targetSdkVersion 20
         versionCode 1
