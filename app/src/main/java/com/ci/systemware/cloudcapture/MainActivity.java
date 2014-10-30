@@ -1,7 +1,6 @@
 package com.ci.systemware.cloudcapture;
 
 import android.app.Activity;
-
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -14,16 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
-import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.fragments.LoginFragment;
 import com.ci.systemware.cloudcapture.fragments.NavigationDrawerFragment;
 import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
-import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
-
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */

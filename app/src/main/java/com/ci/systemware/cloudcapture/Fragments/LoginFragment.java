@@ -160,9 +160,9 @@ public class LoginFragment extends Fragment implements LoginTaskInterface,ListAp
     }
 
     private Boolean doSettingsExist(){//check if all needed prefs are set i.e. not empty or null
-        String usernameStr = preferences.getString("username",null).trim();
-        String passwordStr = preferences.getString("password",null).trim();
-        String camidStr = preferences.getString("camid",null).trim();
+        String usernameStr = preferences.getString("username","").trim();
+        String passwordStr = preferences.getString("password","").trim();
+        String camidStr = preferences.getString("camid","").trim();
         return (!TextUtils.isEmpty(usernameStr) && !TextUtils.isEmpty(passwordStr) && !TextUtils.isEmpty(camidStr));
     }
 

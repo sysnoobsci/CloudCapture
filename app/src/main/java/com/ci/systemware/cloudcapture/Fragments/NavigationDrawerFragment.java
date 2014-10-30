@@ -11,7 +11,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,9 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
 import com.ci.systemware.cloudcapture.R;
-import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.adapters.ExpandableListAdapter;
-import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
 
 import java.util.ArrayList;
 import java.util.HashMap;

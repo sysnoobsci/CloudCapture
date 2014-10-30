@@ -13,11 +13,12 @@ import java.util.Map;
 public class Template2LayoutTracker {
     static Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();//form is key = template name ; value = list of labels + UI elements
 
-    ArrayList<String> searchTemplateNames = new ArrayList<String>();
-    ArrayList<String> createTemplateNames = new ArrayList<String>();
-    ArrayList<String> updateTemplateNames = new ArrayList<String>();
+    static ArrayList<String> searchTemplateNames = new ArrayList<String>();
+    static ArrayList<String> createTemplateNames = new ArrayList<String>();
+    static ArrayList<String> updateTemplateNames = new ArrayList<String>();
 
-    ArrayList<String> getSearchTemplateNames(){//returns sorted arraylist
+    public static ArrayList<String> getSearchTemplateNames(){//returns sorted arraylist
+        searchTemplateNames.clear();
         for (String key : map.keySet()) {
             if(key.contains("gensrch_search")){
                 searchTemplateNames.add(key);
@@ -26,7 +27,8 @@ public class Template2LayoutTracker {
         Collections.sort(searchTemplateNames);
         return searchTemplateNames;
     }
-    public ArrayList<String> getCreateTemplateNames(){//returns sorted arraylist
+    public static ArrayList<String> getCreateTemplateNames(){//returns sorted arraylist
+        createTemplateNames.clear();
         for (String key : map.keySet()) {
             if(key.contains("gensrch_create")){
                 createTemplateNames.add(key);
@@ -35,7 +37,8 @@ public class Template2LayoutTracker {
         Collections.sort(createTemplateNames);
         return createTemplateNames;
     }
-    public ArrayList<String> getUpdateTemplateNames(){//returns sorted arraylist
+    public static ArrayList<String> getUpdateTemplateNames(){//returns sorted arraylist
+        updateTemplateNames.clear();
         for (String key : map.keySet()) {
             if(key.contains("gensrch_update")){
                 updateTemplateNames.add(key);
@@ -45,7 +48,7 @@ public class Template2LayoutTracker {
         return updateTemplateNames;
     }
 
-    public ArrayList<String> getTemplateUIElements(String templateName){//pass in a template name and get the array list containing UI element label and type
+    public static ArrayList<String> getTemplateUIElements(String templateName){//pass in a template name and get the array list containing UI element label and type
         return map.get(templateName);
     }
 }
