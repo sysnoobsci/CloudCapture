@@ -25,7 +25,6 @@ import java.util.ArrayList;
  */
 public class XMLParser {
     private static String xmlVals;
-    private static String xmlResponse;
     StringBuilder total = new StringBuilder();
     private final static String EMPTY_STRING = "";
     private final static String TEMPLATE_PREFIX = "gensrch";
@@ -149,7 +148,7 @@ public class XMLParser {
             String trimmedComma = tagText.toString().substring(0, tagText.toString().length() - 1);//trim commas off of the end
             return trimmedComma;
         }
-    }
+    }//end of getCAMTemplateIDs
 
     public static void readXMLAndMapViews(String templateFullFileName) throws XmlPullParserException, IOException {//pass in a camid, and get template names from appconfig
         String templateFileName = FileUtility.fileNameAndExt(templateFullFileName);
@@ -205,7 +204,7 @@ public class XMLParser {
                                 isLabelFound = true;
                             }
                             if(xpp.getAttributeValue(null, "visible")!= null && xpp.getAttributeValue(null, "visible").equals("0")){
-                                Log.d("readXMLAndMapViews()","UI element " + uiElementType + " will be non-visible. Not added to visible UI elements");
+                                Log.d("readXMLAndMapViews()","UI element " + fieldLabel + " will be non-visible. Not added to visible UI elements");
                                 isVisible = false;
                                 uiElementType = "";
                             }
@@ -233,7 +232,6 @@ public class XMLParser {
             Template2LayoutTracker.map.put(templateFileName,viewsList);//add the template file name and its list of visible UI elements
         }//end of else statement
     }
-
 
     public static String viewChooser(String uiElementName){//converts the CI UI element to what it would be as an Android view
         if(uiElementName.equals("combo")){
