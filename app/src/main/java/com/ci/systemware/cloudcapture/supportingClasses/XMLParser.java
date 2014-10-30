@@ -243,6 +243,12 @@ public class XMLParser {
         else if(uiElementName.equals("text")){
             return "textView";
         }
+        else if(uiElementName.equals("stream")){
+            return "fileUri";
+        }
+        else if(uiElementName.equals("display")){
+            return "noViewDisplay";
+        }
         else{
             return "noView";//if suitable Android view isn't found
         }
