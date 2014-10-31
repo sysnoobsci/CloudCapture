@@ -13,14 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
-import com.ci.systemware.cloudcapture.aSyncTasks.ListAppConfigTask;
-import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
 import com.ci.systemware.cloudcapture.aSyncTasks.RASTemplateFileTask;
 import com.ci.systemware.cloudcapture.fragments.LoginFragment;
 import com.ci.systemware.cloudcapture.fragments.NavigationDrawerFragment;
 import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
-import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
-import com.ci.systemware.cloudcapture.interfaces.RASTemplateFileTaskInterface;
+
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks{
