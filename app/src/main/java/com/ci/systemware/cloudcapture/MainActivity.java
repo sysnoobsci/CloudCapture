@@ -13,12 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
+import com.ci.systemware.cloudcapture.aSyncTasks.ListAppConfigTask;
+import com.ci.systemware.cloudcapture.aSyncTasks.LoginTask;
+import com.ci.systemware.cloudcapture.aSyncTasks.RASTemplateFileTask;
 import com.ci.systemware.cloudcapture.fragments.LoginFragment;
 import com.ci.systemware.cloudcapture.fragments.NavigationDrawerFragment;
 import com.ci.systemware.cloudcapture.fragments.SeeBUFragment;
+import com.ci.systemware.cloudcapture.interfaces.LoginTaskInterface;
+import com.ci.systemware.cloudcapture.interfaces.RASTemplateFileTaskInterface;
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks{
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -30,7 +35,7 @@ public class MainActivity extends Activity
     private CharSequence mTitle;
 
     private Boolean first_open = true;//keeps track of if the app is opening for the first time to show the home screen
-
+    RASTemplateFileTask rasTask;
 
     public Boolean getFirst_open() {
         return first_open;
@@ -45,6 +50,9 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mTitle = getTitle();
+    }
+
+    void setUpNavigationDrawer(){
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         // Set up the drawer.
@@ -52,7 +60,6 @@ public class MainActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
-
 
 
     @Override
