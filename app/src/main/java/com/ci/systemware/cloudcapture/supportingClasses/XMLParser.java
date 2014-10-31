@@ -241,7 +241,7 @@ public class XMLParser {
             return "date";
         }
         else if(uiElementName.equals("text")){
-            return "textView";
+            return "editText";
         }
         else if(uiElementName.equals("stream")){
             return "fileUri";
